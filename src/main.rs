@@ -1,28 +1,29 @@
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use axum::{Router, routing::get};
+use hyper::Server;
 use std::net::SocketAddr;
-use dotenv::dotenv;
+use dotenvy::dotenv;
+use tower::ServiceBuilder;
+use tower_http::trace::TraceLayer;
 
-mod config;
 mod db;
 mod routes;
+mod models;
+mod schema;
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok(); // Carregar variáveis de ambiente
-    let pool = db::init_db().await.expect("Falha ao conectar no banco");
+    dotenv().ok();
+    let pool = db::init_db();
 
     let app = Router::new()
-        .nest("/clientes", routes::clientes::router(pool.clone()))
-        .nest("/reservas", routes::reservas::router(pool.clone()));
+        .nest("/clients", routes::clients::router(pool.clone()))
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    println!("🚀 Servidor rodando em http://{}", addr);
+    println!("🚀 Server running on http://{}", addr);
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    Server::bind(&addr)
+    .serve(app.into_make_service())
         .await
         .unwrap();
 }
