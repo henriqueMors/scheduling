@@ -1,56 +1,53 @@
-use axum::{
-    extract::{Json, State},
-    routing::{get, post},
-    Router,
-};
+use axum::{routing::get, Router, Json, extract::State};
 use diesel::prelude::*;
-use uuid::Uuid;
+use serde::{Deserialize, Serialize};
+use crate::db::DbPool;
+use crate::models::client::Client;
 
-use crate::{db::DbPool, models::client::Client, schema::clients};
-
-pub fn router(pool: DbPool) -> Router {
-    Router::new()
-        .route("/", post(create_client))
-        .route("/", get(get_clients))
-        .with_state(pool)
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct NewClient {
     name: String,
     phone: String,
-    email: Option<String>,
+    email: String,
 }
 
-#[axum::debug_handler]
+pub fn router(pool: DbPool) -> Router {
+    Router::new()
+        .route("/", get(list_clients))
+        .route("/", axum::routing::post(create_client))
+        .with_state(pool)
+}
+
+async fn list_clients(State(pool): State<DbPool>) -> Json<Vec<Client>> {
+    use crate::schema::clients::dsl::*;
+
+    let mut conn = pool.get().expect("Failed to get DB connection");
+    let results = clients
+        .load::<Client>(&mut conn)
+        .expect("Error loading clients");
+
+    Json(results)
+}
+
 async fn create_client(
     State(pool): State<DbPool>,
     Json(new_client): Json<NewClient>,
-) -> Result<Json<String>, String> {
-    let conn = &mut pool.get().expect("Failed to get DB connection");
+) -> Json<Client> {
+    use crate::schema::clients::dsl::*;
+
+    let mut conn = pool.get().expect("Failed to get DB connection");
 
     let client = Client {
-        id: Uuid::new_v4(),
+        id: uuid::Uuid::new_v4(),
         name: new_client.name,
         phone: new_client.phone,
-        email: new_client.email,
+        email: Some(new_client.email),
     };
 
-    diesel::insert_into(clients::table)
+    diesel::insert_into(clients)
         .values(&client)
-        .execute(conn)
-        .expect("Error inserting client");
+        .execute(&mut conn)
+        .expect("Failed to insert client");
 
-    Ok(Json(format!("Client {} created!", client.id)))
-}
-
-#[axum::debug_handler]
-async fn get_clients(State(pool): State<DbPool>) -> Result<Json<Vec<Client>>, String> {
-    let conn = &mut pool.get().expect("Failed to get DB connection");
-
-    let result = clients::table
-        .load::<Client>(conn)
-        .expect("Error loading clients");
-
-    Ok(Json(result))
+    Json(client)
 }
