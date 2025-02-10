@@ -28,7 +28,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = TcpListener::bind(addr).await.unwrap();
-    println!("🚀 Server running on http://{}", addr);
+    println!("Server running on http://{}", addr);
 
     loop {
         let (stream, _) = listener.accept().await.unwrap();
