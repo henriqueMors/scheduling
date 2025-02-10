@@ -1,4 +1,4 @@
-use axum::{Router, routing::get};
+use axum::{Router};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
@@ -40,7 +40,7 @@ async fn main() {
             if let Err(err) = http1::Builder::new()
                 .serve_connection(io, service_fn(move |req| {
                     let app = Arc::clone(&app); // ✅ Clonando corretamente
-                    async move { Arc::clone(&app).oneshot(req).await } // ✅ Solução final
+                    async move { <Router as Clone>::clone(&Arc::clone(&app)).oneshot(req).await } // ✅ Solução final
                 }))
                 .await
             {
