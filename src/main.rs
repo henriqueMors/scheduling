@@ -6,8 +6,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use dotenvy::dotenv;
-use tower::Service; 
-use tower::ServiceExt;
+use tower::util::ServiceExt;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
@@ -33,15 +32,15 @@ async fn main() {
 
     loop {
         let (stream, _) = listener.accept().await.unwrap();
-        let app = app.clone();
+        let app = Arc::clone(&app); // ✅ Mantendo Arc
 
         tokio::spawn(async move {
             let io = TokioIo::new(stream);
 
             if let Err(err) = http1::Builder::new()
                 .serve_connection(io, service_fn(move |req| {
-                    let app = app.clone();
-                    async move { app.clone().oneshot(req).await }
+                    let app = Arc::clone(&app); // ✅ Clonando corretamente
+                    async move { Arc::clone(&app).oneshot(req).await } // ✅ Solução final
                 }))
                 .await
             {
