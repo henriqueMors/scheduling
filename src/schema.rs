@@ -1,4 +1,5 @@
 // @generated automatically by Diesel CLI.
+
 diesel::table! {
     clients (id) {
         id -> Uuid,
@@ -12,7 +13,9 @@ diesel::table! {
     reservations (id) {
         id -> Uuid,
         client_id -> Uuid,
-        datetime -> Timestamp,
+        service -> Text,
+        appointment_time -> Timestamp,
+        status -> Text,
     }
 }
 

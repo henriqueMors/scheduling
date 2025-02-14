@@ -20,16 +20,20 @@ async fn main() {
     dotenv().ok();
     let pool = db::init_db();
 
+    // Criar o roteador
     let app = Arc::new(
         Router::new()
             .nest("/clients", routes::clients::router(pool.clone()))
+            .nest("/reservations", routes::reservations::router(pool.clone())) // ✅ Adicionada a rota correta
             .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
     );
 
+    // Configuração do servidor
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = TcpListener::bind(addr).await.unwrap();
-    println!("Server running on http://{}", addr);
+    println!("🚀 Server running on http://{}", addr);
 
+    // Loop principal para aceitar conexões
     loop {
         let (stream, _) = listener.accept().await.unwrap();
         let app = Arc::clone(&app);
