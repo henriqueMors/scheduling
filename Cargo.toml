@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.7", features = ["macros", "http1", "http2", "server"] }
-
-hyper = { version = "1.0", features = ["http1", "http2", "server"] }
+axum = { version = "0.7", features = ["macros", "http1", "http2"] }
+hyper = { version = "0.14", features = ["http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.4", features = ["util"] }
