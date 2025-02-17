@@ -1,7 +1,6 @@
--- Your SQL goes here
 CREATE TABLE clients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    email TEXT UNIQUE
+    email TEXT NOT NULL,
+    phone TEXT  -- pode ser NULL
 );

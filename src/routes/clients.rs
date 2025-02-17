@@ -1,101 +1,85 @@
-use axum::{routing::{get, post, put, delete}, Router, Json, extract::{Path, State}};
-use diesel::{RunQueryDsl, QueryDsl, ExpressionMethods};
-use serde::{Deserialize, Serialize};
+use axum::{
+    extract::{Path, Extension},
+    Json, Router,
+    routing::{get, post, put, delete},
+    http::StatusCode,
+};
 use uuid::Uuid;
-use crate::{db::DbPool, models::client::{Client, NewClient}, schema::clients::dsl::*};
+use serde_json::json;
+use crate::models::client::{Client, NewClient, UpdateClient};
+use crate::services::client_service;
+use crate::db::Pool;
 
-pub fn router(pool: DbPool) -> Router {
+/// Handler para criar um novo cliente.
+/// Endpoint: POST /clients
+pub async fn create_client(
+    Extension(pool): Extension<Pool>,
+    Json(payload): Json<NewClient>,
+) -> Result<Json<Client>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    match client_service::create_client(&mut conn, payload) {
+        Ok(client) => Ok(Json(client)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
+/// Handler para buscar um cliente pelo ID.
+/// Endpoint: GET /clients/:id
+pub async fn get_client(
+    Extension(pool): Extension<Pool>,
+    Path(client_id): Path<Uuid>,
+) -> Result<Json<Client>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    match client_service::get_client_by_id(&mut conn, client_id) {
+        Ok(client) => Ok(Json(client)),
+        Err(e) => Err((StatusCode::NOT_FOUND, e.to_string())),
+    }
+}
+
+/// Handler para retornar todos os clientes.
+/// Endpoint: GET /clients
+pub async fn get_clients(
+    Extension(pool): Extension<Pool>,
+) -> Result<Json<Vec<Client>>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    match client_service::get_all_clients(&mut conn) {
+        Ok(clients) => Ok(Json(clients)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
+/// Handler para atualizar um cliente.
+/// Endpoint: PUT /clients/:id
+pub async fn update_client(
+    Extension(pool): Extension<Pool>,
+    Path(client_id): Path<Uuid>,
+    Json(payload): Json<UpdateClient>,
+) -> Result<Json<Client>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    match client_service::update_client(&mut conn, client_id, payload) {
+        Ok(client) => Ok(Json(client)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
+/// Handler para deletar um cliente.
+/// Endpoint: DELETE /clients/:id
+pub async fn delete_client(
+    Extension(pool): Extension<Pool>,
+    Path(client_id): Path<Uuid>,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    match client_service::delete_client(&mut conn, client_id) {
+        Ok(deleted) if deleted > 0 => Ok(Json(json!({"message": "Client deleted"}))),
+        Ok(_) => Err((StatusCode::NOT_FOUND, "Client not found".into())),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
+/// Agrega as rotas de clientes em um Router do Axum.
+pub fn router(pool: Pool) -> Router {
     Router::new()
-        .route("/", get(list_clients).post(create_client))
+        .route("/", get(get_clients).post(create_client))
         .route("/:id", get(get_client).put(update_client).delete(delete_client))
-        .with_state(pool)
-}
-
-// 🔹 Listar todos os clientes (GET /clients)
-async fn list_clients(State(pool): State<DbPool>) -> Json<Vec<Client>> {
-    use crate::schema::clients::dsl::*;
-    let mut conn = pool.get().expect("Falha ao obter conexão do banco");
-    let results = clients.load::<Client>(&mut conn).expect("Erro ao buscar clientes");
-    Json(results)
-}
-
-// 🔹 Criar novo cliente (POST /clients)
-#[derive(Deserialize)]
-struct CreateClient {
-    name: String,
-    phone: String,
-    email: Option<String>,
-}
-
-async fn create_client(State(pool): State<DbPool>, Json(payload): Json<CreateClient>) -> Json<Client> {
-    let mut conn = pool.get().expect("Falha ao obter conexão do banco");
-    
-    let new_client = NewClient {
-        id: Uuid::new_v4(),
-        name: payload.name,
-        phone: payload.phone,
-        email: payload.email,
-    };
-
-    diesel::insert_into(clients)
-        .values(&new_client)
-        .execute(&mut conn)
-        .expect("Erro ao inserir cliente");
-
-    Json(Client {
-        id: new_client.id,
-        name: new_client.name,
-        phone: new_client.phone,
-        email: new_client.email,
-    })
-}
-
-// 🔹 Buscar cliente pelo ID (GET /clients/:id)
-async fn get_client(State(pool): State<DbPool>, Path(client_id): Path<Uuid>) -> Json<Client> {
-    let mut conn = pool.get().expect("Falha ao obter conexão do banco");
-    let client = clients
-        .filter(id.eq(client_id))
-        .first::<Client>(&mut conn)
-        .expect("Cliente não encontrado");
-
-    Json(client)
-}
-
-// 🔹 Atualizar cliente (PUT /clients/:id)
-#[derive(Deserialize)]
-struct UpdateClient {
-    name: Option<String>,
-    phone: Option<String>,
-    email: Option<String>,
-}
-
-async fn update_client(State(pool): State<DbPool>, Path(client_id): Path<Uuid>, Json(payload): Json<UpdateClient>) -> Json<Client> {
-    let mut conn = pool.get().expect("Falha ao obter conexão do banco");
-
-    diesel::update(clients.filter(id.eq(client_id)))
-        .set((
-            name.eq(payload.name.unwrap_or_else(|| "".to_string())),
-            phone.eq(payload.phone.unwrap_or_else(|| "".to_string())),
-            email.eq(payload.email),
-        ))
-        .execute(&mut conn)
-        .expect("Erro ao atualizar cliente");
-
-    let updated_client = clients
-        .filter(id.eq(client_id))
-        .first::<Client>(&mut conn)
-        .expect("Cliente não encontrado");
-
-    Json(updated_client)
-}
-
-// 🔹 Deletar cliente (DELETE /clients/:id)
-async fn delete_client(State(pool): State<DbPool>, Path(client_id): Path<Uuid>) -> Json<String> {
-    let mut conn = pool.get().expect("Falha ao obter conexão do banco");
-
-    diesel::delete(clients.filter(id.eq(client_id)))
-        .execute(&mut conn)
-        .expect("Erro ao deletar cliente");
-
-    Json(format!("Cliente {} removido!", client_id))
+        .layer(Extension(pool))
 }
