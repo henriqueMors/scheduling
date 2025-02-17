@@ -1,4 +1,4 @@
-use axum::{Router, Server};
+use axum::Router;
 use std::net::SocketAddr;
 use dotenvy::dotenv;
 
@@ -20,7 +20,8 @@ async fn main() {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
-    Server::bind(&addr)
+    // Use o caminho completo para acessar o Server do Hyper:
+    hyper::server::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
