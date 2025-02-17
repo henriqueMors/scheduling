@@ -1,13 +1,12 @@
-use axum::Router;
+use axum::{Router, Server};
 use std::net::SocketAddr;
 use dotenvy::dotenv;
-use hyper::server::Server; // Importa Server diretamente do hyper
 
 mod db;
 mod models;
 mod routes;
 mod services;
-mod schema; // Para expor o schema para todo o crate
+mod schema; // Expor o schema para todo o crate
 
 #[tokio::main]
 async fn main() {
