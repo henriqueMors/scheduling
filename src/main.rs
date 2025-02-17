@@ -1,7 +1,7 @@
 use axum::Router;
 use std::net::SocketAddr;
 use dotenvy::dotenv;
-use hyper::Server; // Importa Server diretamente do hyper
+use hyper::server::Server; // Importa Server diretamente do hyper
 
 mod db;
 mod models;
