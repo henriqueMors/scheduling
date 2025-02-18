@@ -10,8 +10,8 @@ use crate::models::client::{Client, NewClient, UpdateClient};
 use crate::services::client_service;
 use crate::db::Pool;
 
-/// Handler para criar um novo cliente.
-/// Endpoint: POST /clients
+//Handler para criar um novo cliente.
+//Endpoint: POST /clients
 pub async fn create_client(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<NewClient>,
