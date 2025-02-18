@@ -1,8 +1,7 @@
 use axum::Router;
 use std::net::SocketAddr;
 use dotenvy::dotenv;
-use hyper::Server;
-use tokio::net::TcpListener;
+use tokio::net::TcpListener; // Importe TcpListener do tokio
 
 mod db;
 mod models;
@@ -23,13 +22,9 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    let listener = TcpListener::bind(&addr)
-        .await
-        .expect("Failed to bind address");
-
-    // Aqui usamos o método `from` conforme sugerido pelo compilador.
-    Server::from(listener)
-        .serve(app.into_make_service())
+    // Use `axum::serve` com `TcpListener` para iniciar o servidor
+    let listener = TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 }
