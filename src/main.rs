@@ -1,13 +1,14 @@
 use axum::Router;
 use std::net::SocketAddr;
 use dotenvy::dotenv;
-use tokio::net::TcpListener; // Importe TcpListener do tokio
+use tokio::net::TcpListener;
 
 mod db;
 mod models;
+mod handlers;
 mod routes;
 mod services;
-mod schema; // Expor o schema para todo o crate
+mod schema;
 
 #[tokio::main]
 async fn main() {
@@ -17,12 +18,12 @@ async fn main() {
 
     let app = Router::new()
         .nest("/clients", routes::clients::router(pool.clone()))
-        .nest("/reservations", routes::reservations::router(pool.clone()));
+        .nest("/reservations", routes::reservations::router(pool.clone()))
+        .nest("/auth", handlers::auth::router(pool.clone()));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    // Use `axum::serve` com `TcpListener` para iniciar o servidor
     let listener = TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app.into_make_service())
         .await

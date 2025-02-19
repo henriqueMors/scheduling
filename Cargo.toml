@@ -19,3 +19,4 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 jsonwebtoken = "9"
 argon2 = "0.5"
+rand = "0.8"
