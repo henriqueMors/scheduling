@@ -4,6 +4,7 @@ use axum::{
     routing::{get, post, put, delete},
     http::StatusCode,
 };
+
 use uuid::Uuid;
 use serde_json::json;
 use crate::models::client::{Client, NewClient, UpdateClient};
