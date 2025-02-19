@@ -1,16 +1,11 @@
+use jsonwebtoken::{encode, Header, EncodingKey, Algorithm};
 use crate::schema::users::dsl::*;
-
-use axum::{
-    extract::{Extension, Json},
-    http::StatusCode,
-    Router,
-};
+use axum::{extract::{Extension, Json}, http::StatusCode, Router};
 use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 use crate::db::Pool;
 use crate::models::user::User;
 use crate::services::auth_service::{verify_password, generate_sms_code, send_sms};
-use jsonwebtoken::{encode, Header, EncodingKey};
 use std::time::{SystemTime, Duration};
 
 #[derive(Deserialize)]
@@ -22,7 +17,14 @@ pub struct LoginRequest {
 #[derive(Serialize)]
 pub struct LoginResponse {
     pub message: String,
-    pub sms_code: Option<String>, // Apenas para teste: em produção, remova.
+    pub sms_code: Option<String>, // Apenas para teste, remova em produção.
+}
+
+/// Struct para as Claims no JWT.
+#[derive(Serialize, Deserialize)]
+pub struct Claims {
+    pub sub: String,  // O ID do usuário
+    pub exp: usize,   // Data de expiração
 }
 
 /// Endpoint de login: valida telefone e senha, gera e "envia" o código SMS.
@@ -32,9 +34,9 @@ pub async fn login(
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
-    // Busca o usuário pelo telefone, certificando-se que o role seja "client" ou "admin".
+    // Busca o usuário pelo telefone, certificando-se de que o role seja "client"
     let user: User = users.filter(phone.eq(&payload.phone))
-        .filter(role.eq("client"))  // Para login de clientes
+        .filter(role.eq("client"))  // Certifique-se de que o role seja "client"
         .first(&mut conn)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Credenciais inválidas".into()))?;
     
@@ -62,22 +64,22 @@ pub struct VerifyRequest {
 #[derive(Serialize)]
 pub struct VerifyResponse {
     pub message: String,
-    pub token: Option<String>, // Geração do token JWT
+    pub token: Option<String>, // Gerar o token JWT
 }
 
-/// Gera um token JWT para o usuário autenticado.
+/// Gera o JWT para o usuário autenticado
 fn generate_jwt(user: &User) -> String {
     let expiration = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        + Duration::new(3600, 0);  // O token expira em 1 hora
+        + Duration::new(3600, 0);  // Expira em 1 hora
 
-    let claims = jsonwebtoken::Claims {
+    let claims = Claims {
         sub: user.id.to_string(),
         exp: expiration.as_secs() as usize,
     };
 
-    encode(&Header::default(), &claims, &EncodingKey::from_secret("secret_key".as_ref())).unwrap()
+    encode(&Header::new(Algorithm::HS256), &claims, &EncodingKey::from_secret("secret_key".as_ref())).unwrap()
 }
 
 /// Endpoint de verificação: valida o código SMS e autentica o usuário.
