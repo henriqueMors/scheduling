@@ -1,3 +1,5 @@
+use crate::schema::users::dsl::*;
+
 use axum::{
     extract::{Extension, Json},
     http::StatusCode,
