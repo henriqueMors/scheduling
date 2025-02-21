@@ -5,7 +5,7 @@ use tokio::net::TcpListener;
 
 mod db;
 mod models;
-mod handlers;
+mod handlers; // Certifique-se de que handlers::admin está disponível
 mod routes;
 mod services;
 mod schema;

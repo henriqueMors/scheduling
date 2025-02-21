@@ -1,16 +1,20 @@
-use axum::{extract::{Extension, Json}, http::StatusCode, Router};
+use axum::{
+    extract::{Extension, Json},
+    http::StatusCode,
+    Router,
+};
 use diesel::prelude::*;
+use uuid::Uuid;
+use serde::{Deserialize, Serialize};
 use crate::db::Pool;
 use crate::models::user::{User, NewUser};
 use crate::services::admin_service::{add_admin, remove_admin};
-use uuid::Uuid;
-use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct AddAdminRequest {
     pub name: String,
     pub phone: String,
-    pub password: String, // Aqui você pode hash a senha antes de salvar no banco
+    pub password: String, // A senha será hashada antes de salvar
 }
 
 #[derive(Deserialize)]
@@ -29,12 +33,13 @@ pub async fn add_admin_handler(
     Json(payload): Json<AddAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    // Aqui, você precisa usar o ID do administrador master (que será obtido do token JWT, por exemplo)
-    let master_id = Uuid::new_v4(); // Isso deve ser substituído pela lógica que extrai o ID do token
-
-    let password_hash = "hashed_password"; // Aqui você deve hash a senha utilizando argon2 ou outro algoritmo
-
+    
+    // Em uma implementação real, o master_id seria extraído do token JWT autenticado.
+    let master_id = Uuid::new_v4(); // Substitua por lógica real
+    
+    // Hash da senha - em produção, utilize argon2 para gerar o hash
+    let password_hash = "hashed_password"; // Substitua pela lógica de hash
+    
     match add_admin(&mut conn, master_id, payload.name.clone(), payload.phone.clone(), password_hash.to_string()) {
         Ok(user) => Ok(Json(AdminResponse {
             message: format!("Administrador {} adicionado com sucesso.", user.name),
@@ -49,10 +54,10 @@ pub async fn remove_admin_handler(
     Json(payload): Json<RemoveAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    // Aqui, você precisa usar o ID do administrador master (que será obtido do token JWT, por exemplo)
-    let master_id = Uuid::new_v4(); // Isso deve ser substituído pela lógica que extrai o ID do token
-
+    
+    // Em uma implementação real, o master_id seria extraído do token JWT autenticado.
+    let master_id = Uuid::new_v4(); // Substitua por lógica real
+    
     match remove_admin(&mut conn, master_id, payload.admin_id) {
         Ok(_) => Ok(Json(AdminResponse {
             message: "Administrador removido com sucesso.".to_string(),
