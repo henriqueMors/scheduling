@@ -1,11 +1,18 @@
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
+use argon2::{self, Config};
 use rand::Rng;
 
+pub fn hash_password(password: &str) -> Result<String, argon2::Error> {
+    let mut salt = [0u8; 16];
+    rand::thread_rng().fill(&mut salt);
+    let config = Config::default();
+    argon2::hash_encoded(password.as_bytes(), &salt, &config)
+}
+
+// Já existente: verificação de senha e geração de SMS.
 pub fn verify_password(hash: &str, password: &str) -> bool {
-    // Tenta analisar o hash fornecido
-    if let Ok(parsed_hash) = PasswordHash::new(hash) {
-        // Verifica a senha usando o Argon2 padrão
-        Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok()
+    use argon2::PasswordVerifier;
+    if let Ok(parsed_hash) = argon2::PasswordHash::new(hash) {
+        argon2::Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok()
     } else {
         false
     }
