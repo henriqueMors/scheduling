@@ -1,11 +1,11 @@
-use axum::Router;
+use axum::{Router, Extension};
 use std::net::SocketAddr;
 use dotenvy::dotenv;
 use tokio::net::TcpListener;
 
 mod db;
 mod models;
-mod handlers; // Certifique-se de que o módulo handlers inclua auth
+mod handlers;
 mod routes;
 mod services;
 mod schema;
@@ -13,14 +13,14 @@ mod schema;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-
     let pool = db::init_db();
 
     let app = Router::new()
         .nest("/clients", routes::clients::router(pool.clone()))
         .nest("/reservations", routes::reservations::router(pool.clone()))
-        .nest("/auth/admin", handlers::auth::router(pool.clone())) // Rota de autenticação para administradores
-        .nest("/auth/client", handlers::auth::router(pool.clone())); // Alterei para `router` (não `client_router`)
+        .nest("/auth", handlers::auth::router(pool.clone()))
+        .nest("/admin", handlers::admin::admin_router(pool.clone()))
+        .layer(Extension(pool));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
