@@ -5,7 +5,7 @@ use tokio::net::TcpListener;
 
 mod db;
 mod models;
-mod handlers; // Certifique-se de que handlers::admin está disponível
+mod handlers; // Certifique-se de que handlers::auth e handlers::admin estejam definidos
 mod routes;
 mod services;
 mod schema;
@@ -15,6 +15,11 @@ async fn main() {
     dotenv().ok();
     let pool = db::init_db();
 
+    // Agrupa as rotas:
+    // - /clients: endpoints do CRUD de clientes
+    // - /reservations: endpoints do CRUD de reservas
+    // - /auth: endpoints de autenticação (login, verificação e troca de senha)
+    // - /admin: endpoints para o administrador master gerenciar administradores secundários
     let app = Router::new()
         .nest("/clients", routes::clients::router(pool.clone()))
         .nest("/reservations", routes::reservations::router(pool.clone()))
