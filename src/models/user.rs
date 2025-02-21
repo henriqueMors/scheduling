@@ -1,9 +1,4 @@
-use uuid::Uuid;
-use serde::{Serialize, Deserialize};
-use diesel::{Queryable, Insertable, AsChangeset};
-use crate::schema::users;
-
-#[derive(Debug, Queryable, Serialize)]
+#[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub name: String,
@@ -19,7 +14,7 @@ pub struct NewUser {
     pub name: String,
     pub phone: String,
     pub password_hash: String,
-    pub role: String,
+    pub role: String,       // "client", "admin" ou "admin_master"
     pub sms_verified: bool,
 }
 
