@@ -6,12 +6,66 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 use crate::db::Pool;
-use crate::models::user::User;
+use crate::models::user::{User, NewUser};
 use crate::schema::users::dsl::*;
 use crate::services::auth_service::{hash_password, verify_password, generate_sms_code, send_sms};
 use jsonwebtoken::{encode, Header, EncodingKey, Algorithm, DecodingKey, Validation, decode};
 use std::time::{SystemTime, Duration};
 use uuid::Uuid;
+
+//
+// REGISTRATION
+//
+
+#[derive(Deserialize)]
+pub struct RegisterRequest {
+    pub name: String,
+    pub phone: String,
+    pub password: String,
+}
+
+#[derive(Serialize)]
+pub struct RegisterResponse {
+    pub message: String,
+}
+
+/// Endpoint de registro: cria um novo usuário com role "client".
+pub async fn register(
+    Extension(pool): Extension<Pool>,
+    Json(payload): Json<RegisterRequest>,
+) -> Result<Json<RegisterResponse>, (StatusCode, String)> {
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    // Verifica se já existe um usuário com o mesmo telefone.
+    let existing: Result<User, _> = users.filter(phone.eq(&payload.phone)).first(&mut conn);
+    if existing.is_ok() {
+        return Err((StatusCode::CONFLICT, "User already exists".into()));
+    }
+    
+    // Gera o hash da senha (renomeado para evitar conflito com a coluna do schema).
+    let new_password_hash = hash_password(&payload.password)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    // Cria o novo usuário com role "client" e sms_verified como false.
+    let new_user = NewUser {
+        name: payload.name,
+        phone: payload.phone,
+        password_hash: new_password_hash,
+        role: "client".to_string(),
+        sms_verified: false,
+    };
+    
+    // Insere o novo usuário no banco.
+    let inserted: User = diesel::insert_into(users)
+        .values(&new_user)
+        .get_result(&mut conn)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    Ok(Json(RegisterResponse {
+        message: format!("User {} registered successfully.", inserted.name),
+    }))
+}
 
 //
 // LOGIN & VERIFICATION (Geração de código SMS e JWT)
@@ -35,7 +89,8 @@ pub async fn login(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
     // Busca o usuário pelo telefone, garantindo que o role seja "client"
     let user: User = users
@@ -79,8 +134,8 @@ fn generate_jwt(user: &User) -> String {
 
     #[derive(Serialize, Deserialize)]
     struct Claims {
-        sub: String,
-        exp: usize,
+        sub: String, // ID do usuário
+        exp: usize,  // Expiração (em segundos desde epoch)
     }
 
     let claims = Claims {
@@ -96,14 +151,15 @@ pub async fn verify(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
     // Busca o usuário pelo telefone.
     let user: User = users
         .filter(phone.eq(&payload.phone))
         .first(&mut conn)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Usuário não encontrado".into()))?;
-
+    
     // Exemplo simples de validação: se o código tiver 6 dígitos, considera válido.
     if payload.sms_code.len() == 6 {
         let token = generate_jwt(&user);
@@ -138,7 +194,8 @@ pub async fn change_password(
     Json(payload): Json<ChangePasswordRequest>,
 ) -> Result<Json<ChangePasswordResponse>, (StatusCode, String)> {
     use crate::schema::users::dsl::*;
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
     // Busca o usuário pelo telefone.
     let user: User = users
@@ -195,7 +252,8 @@ pub async fn forgot_password(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<ForgotPasswordRequest>,
 ) -> Result<Json<ForgotPasswordResponse>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
     // Busca o usuário pelo telefone.
     let user: User = users
@@ -204,7 +262,9 @@ pub async fn forgot_password(
         .map_err(|_| (StatusCode::UNAUTHORIZED, "User not found".into()))?;
     
     // Define a expiração para 5 minutos.
-    let expiration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap() + Duration::new(300, 0);
+    let expiration = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap() + Duration::new(300, 0);
     
     let claims = ResetClaims {
         sub: user.id.to_string(),
@@ -260,7 +320,8 @@ pub async fn reset_password(
         return Err((StatusCode::UNAUTHORIZED, "Token is not valid for password reset".into()));
     }
     
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
     // Busca o usuário pelo ID e verifica se o telefone confere.
     let user: User = users
@@ -290,6 +351,7 @@ pub async fn reset_password(
 //
 pub fn router(pool: Pool) -> Router {
     Router::new()
+        .route("/register", axum::routing::post(register))
         .route("/login", axum::routing::post(login))
         .route("/verify", axum::routing::post(verify))
         .route("/change_password", axum::routing::post(change_password))
