@@ -363,3 +363,4 @@ pub fn router(pool: Pool) -> Router {
         .route("/reset_password", axum::routing::post(reset_password))
         .layer(Extension(pool))
 }
+
