@@ -49,6 +49,9 @@ pub async fn register(
     let new_password_hash = hash_password(&payload.password)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
+    // Define o role: se o payload incluir um role, usa-o; caso contrário, define como "client".
+    let role_value = payload.role.unwrap_or_else(|| "client".to_string());
+
     // Cria o novo usuário com role "client" e sms_verified como false.
     let new_user = NewUser {
         name: payload.name,
