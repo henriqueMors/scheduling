@@ -25,7 +25,6 @@ pub struct RegisterRequest {
     pub role: Option<String>, // Se enviado, usará esse valor; se não, usará "client" por padrão.
 }
 
-
 #[derive(Serialize)]
 pub struct RegisterResponse {
     pub message: String,
