@@ -1,4 +1,7 @@
--- Your SQL goes here
+-- Cria a extensão para gerar UUIDs, se ainda não existir
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Cria a tabela de usuários
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
