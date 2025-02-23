@@ -22,7 +22,9 @@ pub struct RegisterRequest {
     pub name: String,
     pub phone: String,
     pub password: String,
+    pub role: Option<String>, // Se enviado, usará esse valor; se não, usará "client" por padrão.
 }
+
 
 #[derive(Serialize)]
 pub struct RegisterResponse {
