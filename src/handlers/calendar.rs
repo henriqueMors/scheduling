@@ -56,8 +56,8 @@ pub async fn get_calendar(
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid date format. Use YYYY-MM-DD.".to_string()))?;
     
     // Defina o horário de funcionamento (por exemplo, 08:00 às 18:00) com intervalos de 30 minutos
-    let start_time = NaiveTime::from_hms(8, 0, 0);
-    let end_time = NaiveTime::from_hms(18, 0, 0);
+    let start_time = NaiveTime::from_hms_opt(8, 0, 0).expect("Hora inicial inválida");
+    let end_time = NaiveTime::from_hms_opt(18, 0, 0).expect("Hora final inválida");
     let slot_duration = ChronoDuration::minutes(30);
     
     let start_datetime = NaiveDateTime::new(date, start_time);
