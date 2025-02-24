@@ -83,17 +83,16 @@ pub async fn get_calendar(
         
         // Defina status e, se necessário, os detalhes da reserva
         let (status, details) = if let Some(res) = reservation_opt {
-            // Se o usuário for administrador, você pode incluir detalhes adicionais.
-            // Para clientes, apenas o status "indisponível" é retornado.
             (
-                "indisponível".to_string(),
+                "indisponível".to_string(), // Certifique-se de que é uma String
                 Some(ReservationDetails {
-                    reservation_id: res.id.to_string(),
-                    client_id: res.client_id.to_string(),
-                })
+                    client_name: res.client_name,
+                    start_time: res.start_time,
+                    end_time: res.end_time,
+                }),
             )
         } else {
-            ("disponível".to_string(), None)
+            ("disponível".to_string(), None) // Certifique-se de que é uma String
         };
         
         slots.push(TimeSlot {

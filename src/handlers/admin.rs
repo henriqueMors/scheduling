@@ -3,8 +3,8 @@ use axum::{
     http::StatusCode,
     Router,
 };
-use headers::{Authorization};
 use headers::authorization::Bearer;
+use headers::{Authorization};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use diesel::prelude::*;
@@ -41,8 +41,8 @@ pub struct AdminResponse {
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn add_admin_handler(
-    // Extrai o header Authorization usando TypedHeader
-    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+    // Extração do header Authorization usando Header (não TypedHeader)
+    Header(Authorization(bearer)): Header<Authorization<Bearer>>,
     Extension(pool): Extension<Pool>,
     Json(payload): Json<AddAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
@@ -70,12 +70,12 @@ pub async fn add_admin_handler(
         return Err((StatusCode::FORBIDDEN, "You do not have permission to add new admins.".into()));
     }
 
-    // Gera o hash da senha para o novo administrador (renomeamos a variável para evitar conflito)
-    let hashed_pw = crate::services::auth_service::hash_password(&payload.password)
+    // Gera o hash da senha para o novo administrador (variável renomeada para evitar conflito)
+    let new_password_hash = crate::services::auth_service::hash_password(&payload.password)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // Chama a função de serviço para adicionar o novo admin
-    match add_admin(&mut conn, master_id, payload.name.clone(), payload.phone.clone(), hashed_pw) {
+    match add_admin(&mut conn, master_id, payload.name.clone(), payload.phone.clone(), new_password_hash) {
         Ok(user) => Ok(Json(AdminResponse {
             message: format!("Administrador {} adicionado com sucesso.", user.name),
         })),
@@ -87,7 +87,7 @@ pub async fn add_admin_handler(
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn remove_admin_handler(
-    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+    Header(Authorization(bearer)): Header<Authorization<Bearer>>,
     Extension(pool): Extension<Pool>,
     Json(payload): Json<RemoveAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
