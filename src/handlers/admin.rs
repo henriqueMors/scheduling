@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Extension, Json, Header},
-    http::StatusCode,
+    extract::{Extension, Json},
+    http::{StatusCode},
     Router,
 };
 use headers::{Authorization};
@@ -41,7 +41,7 @@ pub struct AdminResponse {
 /// Extrai o token JWT do header (via Authorization) e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn add_admin_handler(
-    Authorization(bearer): Authorization<Bearer>,
+    Authorization(bearer): Authorization<Bearer>, // Alteração para usar diretamente o header Authorization
     Extension(pool): Extension<Pool>,
     Json(payload): Json<AddAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
@@ -69,7 +69,7 @@ pub async fn add_admin_handler(
         return Err((StatusCode::FORBIDDEN, "You do not have permission to add new admins.".into()));
     }
     
-    // Gera o hash da senha para o novo administrador (renomeado para evitar conflito com a coluna do schema)
+    // Gera o hash da senha para o novo administrador
     let new_password_hash = crate::services::auth_service::hash_password(&payload.password)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     
@@ -86,7 +86,7 @@ pub async fn add_admin_handler(
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn remove_admin_handler(
-    Authorization(bearer): Authorization<Bearer>,
+    Authorization(bearer): Authorization<Bearer>, // Alteração para usar diretamente o header Authorization
     Extension(pool): Extension<Pool>,
     Json(payload): Json<RemoveAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {

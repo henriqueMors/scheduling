@@ -87,4 +87,32 @@ pub async fn get_calendar(
             (
                 "indisponível".to_string(), // Certifique-se de que é uma String
                 Some(ReservationDetails {
-                    reservation_id: res.id.to_string(), // Ajustado
+                    reservation_id: res.id.to_string(), // Ajustado conforme os campos reais da tabela
+                    client_id: res.client_id.to_string(), // Ajustado conforme os campos reais da tabela
+                }),
+            )
+        } else {
+            ("disponível".to_string(), None) // Certifique-se de que é uma String
+        };
+        
+        slots.push(TimeSlot {
+            time: slot_time,
+            status,
+            reservation_details: details,
+        });
+        
+        current_time += slot_duration;
+    }
+    
+    Ok(Json(CalendarResponse {
+        date: query.date,
+        slots,
+    }))
+}
+
+/// Agrega as rotas do calendário.
+pub fn router(pool: Pool) -> Router {
+    Router::new()
+        .route("/", axum::routing::get(get_calendar))
+        .layer(Extension(pool))
+}
