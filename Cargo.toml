@@ -4,20 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.7", features = ["macros", "http1", "http2", "headers"] }
+# Axum e dependências relacionadas
+axum = { version = "0.7", features = ["macros", "http1", "http2"] }  # Removido o recurso `headers`
 axum-extra = "0.3"
-headers = "0.3"
 hyper = { version = "0.14", features = ["http1", "http2", "server"] }
-tokio = { version = "1", features = ["full"] }
 tower = { version = "0.4", features = ["util"] }
 tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialização e desserialização
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-dotenvy = "0.15"
+
+# Banco de dados e migrações
 diesel = { version = "2", features = ["postgres", "r2d2", "chrono", "uuid"] }
 diesel_migrations = "2"
+
+# Gerenciamento de variáveis de ambiente
+dotenvy = "0.15"
+
+# Datas e horas
 chrono = { version = "0.4", features = ["serde"] }
+
+# UUIDs
 uuid = { version = "1", features = ["v4", "serde"] }
-jsonwebtoken = "7"  # Versão corrigida
+
+# Autenticação e segurança
+jsonwebtoken = "7"
 argon2 = "0.5"
 rand = "0.8"
+
+# Outras dependências
+headers = "0.3"  # Mantido se você estiver usando diretamente a crate `headers`
