@@ -75,7 +75,6 @@ pub async fn get_calendar(
     let mut slots = Vec::new();
     let mut current_time = start_datetime;
     
-<<<<<<< HEAD
 // Itera sobre cada intervalo do dia
 while current_time < end_datetime {
     let slot_time = current_time.time().format("%H:%M").to_string();
@@ -106,7 +105,6 @@ while current_time < end_datetime {
     current_time += slot_duration;
 }
 
-=======
     // Itera sobre cada intervalo do dia
     while current_time < end_datetime {
         let slot_time = current_time.time().format("%H:%M").to_string();
@@ -135,7 +133,6 @@ while current_time < end_datetime {
         
         current_time += slot_duration;
     }
->>>>>>> parent of 18362a0 (update bug)
     
     Ok(Json(CalendarResponse {
         date: query.date,
