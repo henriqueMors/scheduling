@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 # Axum e dependências relacionadas
-axum = { version = "0.7.9", features = ["macros", "http1", "http2"] }
-axum-extra = "0.3"
+axum = { version = "0.7", features = ["macros", "http1", "http2"] }
+axum-extra = "0.10"  # Atualizado para a versão 0.10
 hyper = { version = "0.14", features = ["http1", "http2", "server"] }
 tower = { version = "0.4", features = ["util"] }
 tower-http = { version = "0.5", features = ["cors", "trace"] }
@@ -33,8 +33,5 @@ jsonwebtoken = "7"
 argon2 = "0.5"
 rand = "0.8"
 
-# Tokio
-tokio = { version = "1", features = ["full"] }
-
-# Header e autenticação (se necessário)
-headers = "0.3"
+# Outras dependências
+headers = "0.3"  # Mantido se você estiver usando diretamente a crate `headers`
