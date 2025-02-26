@@ -5,7 +5,7 @@ use tokio::net::TcpListener;
 
 mod db;
 mod models;
-mod handlers;  // Certifique-se de que handlers::auth, handlers::admin e handlers::calendar estejam definidos
+mod handlers; // Certifique-se de que handlers::auth, handlers::admin e handlers::calendar estejam definidos
 mod routes;
 mod services;
 mod schema;

@@ -8,7 +8,7 @@ use uuid::Uuid;
 use serde_json::json;
 use diesel::prelude::*;
 use crate::db::Pool;
-use crate::models::client::{Client, NewClient};
+use crate::models::client::{Client, NewClient, UpdateClient};
 use crate::services::client_service;
 
 /// Endpoint para criar um novo cliente.
@@ -47,7 +47,7 @@ pub async fn get_clients(
 pub async fn update_client(
     Extension(pool): Extension<Pool>,
     Path(client_id): Path<Uuid>,
-    Json(payload): Json<NewClient>,
+    Json(payload): Json<UpdateClient>, // Alterado para UpdateClient para atualizar o cliente
 ) -> Result<Json<Client>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     client_service::update_client(&mut conn, client_id, payload)
@@ -71,7 +71,7 @@ pub async fn delete_client(
 /// Agrega as rotas de clientes em um Router do Axum.
 pub fn router(pool: Pool) -> Router {
     Router::new()
-        .route("/", get(get_clients).post(create_client))
-        .route("/:id", get(get_client).put(update_client).delete(delete_client))
+        .route("/", get(get_clients).post(create_client))  // Rota de listagem de clientes e criação
+        .route("/:id", get(get_client).put(update_client).delete(delete_client)) // Rota de detalhes, atualização e remoção
         .layer(Extension(pool))
 }
