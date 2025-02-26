@@ -11,7 +11,7 @@ mod services;
 mod schema;
 
 #[tokio::main]
-async fn main() {
+async fn main(){
     // Carrega as variáveis de ambiente do arquivo .env
     dotenv().ok();
 
