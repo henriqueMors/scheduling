@@ -58,7 +58,7 @@ pub async fn get_calendar(
     // Defina o horário de funcionamento (por exemplo, 08:00 às 18:00) com intervalos de 30 minutos
     let start_time = NaiveTime::from_hms_opt(8, 0, 0).expect("Hora inicial inválida");
     let end_time = NaiveTime::from_hms_opt(18, 0, 0).expect("Hora final inválida");
-    let slot_duration = ChronoDuration::minutes(30); // Intervalo de 30 minutos
+    let slot_duration = ChronoDuration::minutes(30);
     
     let start_datetime = NaiveDateTime::new(date, start_time);
     let end_datetime = NaiveDateTime::new(date, end_time);
@@ -75,6 +75,7 @@ pub async fn get_calendar(
     let mut slots = Vec::new();
     let mut current_time = start_datetime;
     
+<<<<<<< HEAD
 // Itera sobre cada intervalo do dia
 while current_time < end_datetime {
     let slot_time = current_time.time().format("%H:%M").to_string();
@@ -105,6 +106,36 @@ while current_time < end_datetime {
     current_time += slot_duration;
 }
 
+=======
+    // Itera sobre cada intervalo do dia
+    while current_time < end_datetime {
+        let slot_time = current_time.time().format("%H:%M").to_string();
+        // Verifica se há uma reserva exatamente nesse horário
+        let reservation_opt = day_reservations.iter().find(|r| r.appointment_time == current_time);
+        
+        // Defina status e, se necessário, os detalhes da reserva
+        let (status, details) = if let Some(res) = reservation_opt {
+            (
+                "indisponível".to_string(), // Certifique-se de que é uma String
+                Some(ReservationDetails {
+                    client_name: res.client_name,
+                    start_time: res.start_time,
+                    end_time: res.end_time,
+                }),
+            )
+        } else {
+            ("disponível".to_string(), None) // Certifique-se de que é uma String
+        };
+        
+        slots.push(TimeSlot {
+            time: slot_time,
+            status,
+            reservation_details: details,
+        });
+        
+        current_time += slot_duration;
+    }
+>>>>>>> parent of 18362a0 (update bug)
     
     Ok(Json(CalendarResponse {
         date: query.date,

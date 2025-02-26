@@ -1,8 +1,13 @@
 use axum::{
+<<<<<<< HEAD
     extract::{Extension, Json, TypedHeader},  // Ajuste aqui
+=======
+    extract::{Extension, Json},
+>>>>>>> parent of 18362a0 (update bug)
     http::StatusCode,
     Router,
 };
+use axum_extra::extract::TypedHeader;
 use headers::{Authorization};
 use headers::authorization::Bearer;
 use serde::{Deserialize, Serialize};
@@ -38,10 +43,18 @@ pub struct AdminResponse {
 }
 
 /// Endpoint para adicionar um novo administrador.
+<<<<<<< HEAD
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn add_admin_handler(
     TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,  // Extração direta com TypedHeader
+=======
+/// Extrai o token JWT do header (via TypedHeader) e valida que o usuário autenticado é o admin master.
+#[axum::debug_handler]
+pub async fn add_admin_handler(
+    // Extrai o header Authorization usando TypedHeader do axum-extra
+    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+>>>>>>> parent of 18362a0 (update bug)
     Extension(pool): Extension<Pool>,
     Json(payload): Json<AddAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
@@ -86,7 +99,11 @@ pub async fn add_admin_handler(
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn remove_admin_handler(
+<<<<<<< HEAD
     TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,  // Extração direta com TypedHeader
+=======
+    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+>>>>>>> parent of 18362a0 (update bug)
     Extension(pool): Extension<Pool>,
     Json(payload): Json<RemoveAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
