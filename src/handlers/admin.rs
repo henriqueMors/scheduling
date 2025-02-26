@@ -1,9 +1,8 @@
 use axum::{
-    extract::{Extension, Json},
+    extract::{Extension, Json, Header},
     http::StatusCode,
     Router,
 };
-use axum_extra::extract::TypedHeader;
 use headers::{Authorization};
 use headers::authorization::Bearer;
 use serde::{Deserialize, Serialize};
@@ -39,11 +38,10 @@ pub struct AdminResponse {
 }
 
 /// Endpoint para adicionar um novo administrador.
-/// Extrai o token JWT do header (via TypedHeader) e valida que o usuário autenticado é o admin master.
+/// Extrai o token JWT do header (via Authorization) e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn add_admin_handler(
-    // Extrai o header Authorization usando TypedHeader do axum-extra
-    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+    Authorization(bearer): Authorization<Bearer>,
     Extension(pool): Extension<Pool>,
     Json(payload): Json<AddAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
@@ -88,7 +86,7 @@ pub async fn add_admin_handler(
 /// Extrai o token JWT do header e valida que o usuário autenticado é o admin master.
 #[axum::debug_handler]
 pub async fn remove_admin_handler(
-    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
+    Authorization(bearer): Authorization<Bearer>,
     Extension(pool): Extension<Pool>,
     Json(payload): Json<RemoveAdminRequest>,
 ) -> Result<Json<AdminResponse>, (StatusCode, String)> {
