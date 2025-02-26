@@ -75,34 +75,36 @@ pub async fn get_calendar(
     let mut slots = Vec::new();
     let mut current_time = start_datetime;
     
-    // Itera sobre cada intervalo do dia
-    while current_time < end_datetime {
-        let slot_time = current_time.time().format("%H:%M").to_string();
-        
-        // Verifica se há uma reserva exatamente nesse horário
-        let reservation_opt = day_reservations.iter().find(|r| r.appointment_time == current_time);
-        
-        // Defina status e, se necessário, os detalhes da reserva
-        let (status, details) = if let Some(res) = reservation_opt {
-            (
-                "indisponível".to_string(), // Certifique-se de que é uma String
-                Some(ReservationDetails {
-                    reservation_id: res.id.to_string(), // Ajustado conforme os campos reais da tabela
-                    client_id: res.client_id.to_string(), // Ajustado conforme os campos reais da tabela
-                }),
-            )
-        } else {
-            ("disponível".to_string(), None) // Certifique-se de que é uma String
-        };
-        
-        slots.push(TimeSlot {
-            time: slot_time,
-            status,
-            reservation_details: details,
-        });
-        
-        current_time += slot_duration;
-    }
+// Itera sobre cada intervalo do dia
+while current_time < end_datetime {
+    let slot_time = current_time.time().format("%H:%M").to_string();
+    
+    // Verifica se há uma reserva exatamente nesse horário
+    let reservation_opt = day_reservations.iter().find(|r| r.appointment_time == current_time);
+    
+    // Defina status e, se necessário, os detalhes da reserva
+    let (status_str, details) = if let Some(res) = reservation_opt {
+        (
+            "indisponível".to_string(),
+            Some(ReservationDetails {
+                reservation_id: res.id.to_string(),
+                client_id: res.client_id.to_string(),
+            }),
+        )
+    } else {
+        ("disponível".to_string(), None)
+    };
+
+    // Use a variável status_str ao invés de status
+    slots.push(TimeSlot {
+        time: slot_time,
+        status: status_str,  // Alteração aqui
+        reservation_details: details,
+    });
+    
+    current_time += slot_duration;
+}
+
     
     Ok(Json(CalendarResponse {
         date: query.date,
