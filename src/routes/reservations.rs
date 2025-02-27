@@ -77,6 +77,6 @@ pub async fn delete_reservation(
 pub fn router(pool: Pool) -> Router {
     Router::new()
         .route("/", get(get_reservations).post(create_reservation))
-        .route("/{id}", get(get_reservation).put(update_reservation).delete(delete_reservation))
+        .route("/{reservation_id}", get(get_reservation).put(update_reservation).delete(delete_reservation))
         .layer(Extension(pool))
 }

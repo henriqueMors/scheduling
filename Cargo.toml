@@ -40,3 +40,7 @@ tokio = { version = "1", features = ["full"] }
 headers = "0.3"
 
 regex = "1"
+
+# Para configurar logs
+tracing = "0.1"
+tracing-subscriber = "0.3"

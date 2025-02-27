@@ -2,6 +2,7 @@ use axum::{Router, Extension};
 use std::net::SocketAddr;
 use dotenvy::dotenv;
 use tokio::net::TcpListener;
+use tracing::info;
 
 mod db;
 mod models;
@@ -30,6 +31,8 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    let listener = TcpListener::bind(addr).await.unwrap();
+    let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    info!("🚀 Servidor rodando em http://{}", listener.local_addr().unwrap());
+
     axum::serve(listener, app.into_make_service()).await.unwrap();
 }
