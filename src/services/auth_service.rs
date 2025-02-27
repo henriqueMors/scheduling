@@ -13,16 +13,18 @@ struct Claims {
     exp: usize,
 }
 
-pub fn generate_jwt(user: &User, config: &Config) -> String {
-    let expiration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap() + Duration::new(3600, 0); // 1 hora de validade
+pub fn generate_jwt(config: &Config) -> String {
+    let claims = serde_json::json!({
+        "sub": "user_id",
+        "exp": chrono::Utc::now().timestamp() + 3600
+    });
 
-    let claims = Claims {
-        sub: user.id.to_string(),
-        exp: expiration.as_secs() as usize,
-    };
-
-    encode(&Header::new(Algorithm::HS256), &claims, &EncodingKey::from_secret(config.secret_key.as_ref())).unwrap()
+    encode(
+        &Header::new(Algorithm::HS256),
+        &claims,
+        &EncodingKey::from_secret(config.secret_key.as_ref()), // ✅ Agora existe `secret_key`
+    )
+    .unwrap()
 }
 
 pub fn hash_password(password: &str) -> Result<String, argon2::password_hash::Error> {
