@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Axum e dependências relacionadas
-axum = { version = "0.8.1", features = ["macros", "http1", "http2", "headers"] }
+axum = { version = "0.8.1", features = ["macros", "http1", "http2"] }
 axum-extra = "0.10.0"
 hyper = { version = "0.14", features = ["http1", "http2", "server"] }
 tower = { version = "0.4", features = ["util"] }
