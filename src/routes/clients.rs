@@ -72,6 +72,6 @@ pub async fn delete_client(
 pub fn router(pool: Pool) -> Router {
     Router::new()
         .route("/", get(get_clients).post(create_client))  // Rota de listagem de clientes e criação
-        .route("/:id", get(get_client).put(update_client).delete(delete_client)) // Rota de detalhes, atualização e remoção
+        .route("/{id}", get(get_client).put(update_client).delete(delete_client)) // Rota de detalhes, atualização e remoção
         .layer(Extension(pool))
 }
