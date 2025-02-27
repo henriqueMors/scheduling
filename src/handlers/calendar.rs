@@ -7,8 +7,8 @@ use chrono::{NaiveDate, NaiveTime, NaiveDateTime, Duration as ChronoDuration};
 use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 use crate::db::Pool;
-use crate::models::reservation::Reservation; // Certifique-se de que o modelo Reservation está implementado
-use crate::schema::reservations::dsl::*; // Presume que sua tabela de reservas possui uma coluna "appointment_time"
+use crate::models::reservation::Reservation;
+use crate::schema::reservations::dsl::*;
 use uuid::Uuid;
 
 /// Estrutura para receber a data via query parameter
@@ -75,65 +75,37 @@ pub async fn get_calendar(
     let mut slots = Vec::new();
     let mut current_time = start_datetime;
     
-// Itera sobre cada intervalo do dia
-while current_time < end_datetime {
-    let slot_time = current_time.time().format("%H:%M").to_string();
-    
-    // Verifica se há uma reserva exatamente nesse horário
-    let reservation_opt = day_reservations.iter().find(|r| r.appointment_time == current_time);
-    
-    // Defina status e, se necessário, os detalhes da reserva
-    let (status_str, details) = if let Some(res) = reservation_opt {
-        (
-            "indisponível".to_string(),
-            Some(ReservationDetails {
-                reservation_id: res.id.to_string(),
-                client_id: res.client_id.to_string(),
-            }),
-        )
-    } else {
-        ("disponível".to_string(), None)
-    };
-
-    // Use a variável status_str ao invés de status
-    slots.push(TimeSlot {
-        time: slot_time,
-        status: status_str,  // Alteração aqui
-        reservation_details: details,
-    });
-    
-    current_time += slot_duration;
-}
-
     // Itera sobre cada intervalo do dia
     while current_time < end_datetime {
         let slot_time = current_time.time().format("%H:%M").to_string();
+        
         // Verifica se há uma reserva exatamente nesse horário
         let reservation_opt = day_reservations.iter().find(|r| r.appointment_time == current_time);
         
         // Defina status e, se necessário, os detalhes da reserva
-        let (status, details) = if let Some(res) = reservation_opt {
+        let (status_str, details) = if let Some(res) = reservation_opt {
             (
-                "indisponível".to_string(), // Certifique-se de que é uma String
+                "indisponível".to_string(),
                 Some(ReservationDetails {
-                    client_name: res.client_name,
-                    start_time: res.start_time,
-                    end_time: res.end_time,
+                    reservation_id: res.id.to_string(),
+                    client_id: res.client_id.to_string(),
                 }),
             )
         } else {
-            ("disponível".to_string(), None) // Certifique-se de que é uma String
+            ("disponível".to_string(), None)
         };
-        
+
+        // Adiciona o slot ao vetor de slots
         slots.push(TimeSlot {
             time: slot_time,
-            status,
+            status: status_str,  // Corrigido o uso da variável
             reservation_details: details,
         });
         
         current_time += slot_duration;
     }
-    
+
+    // Retorna a resposta com todos os slots
     Ok(Json(CalendarResponse {
         date: query.date,
         slots,
