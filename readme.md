@@ -37,3 +37,30 @@ Proteção de Rotas com JWT
 Após a verificação via SMS, o backend gera um token JWT que contém o ID do usuário e uma data de expiração.
 Esse token é utilizado para proteger os endpoints sensíveis, garantindo que apenas usuários autenticados possam acessar as funcionalidades restritas.
 Este backend fornece uma base robusta para um sistema de agendamento, permitindo a integração com interfaces web e mobile, e garantindo segurança e controle de acesso com fluxos de autenticação completos e funcionalidades administrativas.
+
+
+################################################################
+
+
+REQUISITOS FUNCIONAIS
+lista dos requisitos funcionais que, com base nas funcionalidades implementadas e planejadas
+
+Cadastro e Autenticação de Usuários
+
+Permitir o registro de clientes (sem opção de selecionar o role).
+Permitir o cadastro de administradores (por meio de uma interface exclusiva para o administrador master).
+Realizar login de usuários por meio do número de telefone e senha, com verificação via código SMS.
+Permitir a recuperação e troca de senha (por meio de token temporário enviado via SMS).
+Gestão de Agendamentos (CRUD de Reservas)
+
+Permitir que clientes criem, visualizem, atualizem e cancelem seus próprios agendamentos.
+Gerenciar os agendamentos no backend, mantendo registros com data, horário e status da reserva.
+Calendário de Agendamentos
+
+Exibir um calendário com slots de tempo para um dia específico, indicando quais horários estão disponíveis e quais estão ocupados.
+Para administradores, mostrar detalhes adicionais das reservas (por exemplo, identificação do cliente e demais informações relevantes).
+Gestão de Usuários Administrativos
+
+Permitir que o administrador master adicione e remova administradores secundários.
+Restringir o acesso a essas funções apenas a usuários com role "admin_master".
+Esses requisitos funcionais formam a base da API SaaS para agendamento, possibilitando tanto a interação dos clientes para reservas quanto a gestão administrativa e visualização completa do calendário.
