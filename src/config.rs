@@ -2,18 +2,16 @@ use std::env;
 use dotenvy::dotenv;
 
 /// Estrutura para armazenar configurações do sistema.
+#[derive(Clone)] // ✅ Adicionado Clone para evitar erro ao usar Extension
 pub struct Config {
     pub database_url: String,
-    pub secret_key: String,
 }
 
 impl Config {
     pub fn from_env() -> Self {
-        dotenv().ok();
-
         Self {
-            database_url: env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
-            secret_key: env::var("SECRET_KEY").expect("SECRET_KEY must be set"),
+            database_url: std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
         }
     }
 }
+
