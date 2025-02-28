@@ -1,63 +1,74 @@
 use axum::{Router, routing::post, Extension, Json, http::StatusCode};
-use diesel::prelude::*;
 use uuid::Uuid;
+use diesel::prelude::*;
 use crate::db::Pool;
-use crate::services::auth_service::{hash_password, validate_user, generate_jwt};
-use crate::models::user::{User, NewUser, InsertableUser, LoginRequest, LoginResponse};
+use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
+use crate::models::user::{User, NewUser, LoginRequest, LoginResponse};
 use crate::schema::users;
+use crate::config::Config;
 
-/// 🔹 Registro de usuário
+/// 🔹 Endpoint de registro de usuário.
 pub async fn register_user(
     Extension(pool): Extension<Pool>,
-    Json(payload): Json<NewUser>,
+    Extension(config): Extension<Config>,
+    Json(mut payload): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let hashed_password = hash_password(&payload.password_hash)
+    // 🔹 Hash da senha
+    payload.password_hash = hash_password(&payload.password_hash)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let new_user = InsertableUser {
-        id: Uuid::new_v4(),
-        name: payload.name,
-        phone: payload.phone,
-        password_hash: hashed_password,
-        role: payload.role,
-        sms_verified: payload.sms_verified,
-    };
-
+    // 🔹 Inserção no banco
     diesel::insert_into(users::table)
-        .values(&new_user)
+        .values(&payload)
         .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // 🔹 Retorna o usuário cadastrado
     let saved_user = users::table
-        .filter(users::phone.eq(&new_user.phone))
+        .order(users::id.desc())
         .first::<User>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(saved_user))
 }
 
-/// 🔹 Login de usuário
+/// 🔹 Endpoint de login
 pub async fn login_user(
     Extension(pool): Extension<Pool>,
+    Extension(config): Extension<Config>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    match validate_user(&mut conn, &payload.phone, &payload.password) {
-        Ok(user) => {
-            let token = generate_jwt(&user).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-            Ok(Json(LoginResponse { token }))
-        }
-        Err(_) => Err((StatusCode::UNAUTHORIZED, "Invalid credentials".into())),
+    // 🔹 Busca usuário pelo telefone
+    let user = users::table
+        .filter(users::phone.eq(&payload.phone))
+        .first::<User>(&mut conn)
+        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()))?;
+
+    // 🔹 Verifica a senha
+    if !verify_password(&user.password_hash, &payload.password) {
+        return Err((StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()));
     }
+
+    // 🔹 Gera token JWT
+    let token = generate_jwt(&user, &config)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(LoginResponse {
+        token,
+        user_id: user.id,
+        role: user.role,
+    }))
 }
 
 /// 🔹 Define as rotas do módulo `auth`
-pub fn router(pool: Pool) -> Router {
+pub fn router(pool: Pool, config: Config) -> Router {
     Router::new()
         .route("/register", post(register_user))
-        .route("/login", post(login_user)) // ✅ Adicionando login
+        .route("/login", post(login_user)) // ✅ Adicionado login
         .layer(Extension(pool))
+        .layer(Extension(config))
 }

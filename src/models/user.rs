@@ -39,6 +39,19 @@ impl Default for NewUser {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct LoginRequest {
+    pub phone: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginResponse {
+    pub token: String,
+    pub user_id: Uuid,
+    pub role: String,
+}
+
 #[derive(Debug, AsChangeset, Deserialize)]
 #[diesel(table_name = users)]
 pub struct UpdateUser {
