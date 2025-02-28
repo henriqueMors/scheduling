@@ -1,6 +1,16 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    admins (id) {
+        id -> Uuid,
+        master_id -> Text,
+        name -> Text,
+        phone -> Text,
+        password_hash -> Text,
+    }
+}
+
+diesel::table! {
     clients (id) {
         id -> Uuid,
         name -> Text,
@@ -33,6 +43,7 @@ diesel::table! {
 diesel::joinable!(reservations -> clients (client_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    admins,
     clients,
     reservations,
     users,
