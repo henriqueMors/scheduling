@@ -4,28 +4,28 @@ use axum::{
     http::StatusCode,
 };
 use uuid::Uuid;
+use serde_json::json;
 use crate::db::Pool;
-use crate::services::admin_service::{self, AdminResponse};
-use crate::models::admin::NewAdmin;
-
+use crate::services::admin_service;
+use crate::models::admin::{NewAdmin, Admin};
 
 /// 🔹 Adiciona um administrador.
 #[axum::debug_handler]
 async fn add_admin_handler(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<NewAdmin>,
-) -> Result<Json<AdminResponse>, (StatusCode, String)> {
+) -> Result<Json<Admin>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    let admin = admin_service::add_admin(&mut conn, payload)
+    let admin = admin_service::add_admin(&mut conn, payload)  // ✅ Retorna Admin
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    Ok(Json(admin))
+    Ok(Json(admin))  // ✅ Agora retorna Admin diretamente
 }
 
 /// 🔹 Lista todos os administradores.
 #[axum::debug_handler]
 async fn list_admins_handler(
     Extension(pool): Extension<Pool>,
-) -> Result<Json<Vec<AdminResponse>>, (StatusCode, String)> {
+) -> Result<Json<Vec<Admin>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     let admins = admin_service::list_admins(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -39,11 +39,15 @@ async fn remove_admin_handler(
     Path(admin_id): Path<Uuid>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    match admin_service::remove_admin(&mut conn, admin_id) {
-        Ok(deleted) if deleted > 0 => Ok(Json(serde_json::json!({"message": "Admin deleted"}))),
-        Ok(_) => Err((StatusCode::NOT_FOUND, "Admin not found".into())),
-        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
-    }
+    admin_service::remove_admin(&mut conn, admin_id)
+        .map(|deleted| {
+            if deleted > 0 {
+                Json(json!({"message": "Admin deleted"}))
+            } else {
+                Json(json!({"error": "Admin not found"}))
+            }
+        })
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
 }
 
 /// 🔹 Define as rotas do módulo `admin`.

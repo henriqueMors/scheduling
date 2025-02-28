@@ -1,22 +1,14 @@
 use diesel::prelude::*;
 use uuid::Uuid;
 use crate::db::Pool;
-use crate::schema::admins;
 use crate::models::admin::{Admin, NewAdmin};
+use crate::schema::admins; // Tabela `admins` no Diesel
 
-
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct AdminResponse {
-    pub id: Uuid,
-    pub name: String,
-    pub phone: String,
-}
-
-/// 🔹 Insere um novo administrador no banco de dados.
+/// 🔹 Adiciona um novo administrador ao banco de dados.
 pub fn add_admin(
     conn: &mut PgConnection,
     payload: NewAdmin
-) -> Result<AdminResponse, diesel::result::Error> {
+) -> Result<Admin, diesel::result::Error> {
     let new_admin = Admin {
         id: Uuid::new_v4(),
         master_id: payload.master_id,
@@ -29,22 +21,12 @@ pub fn add_admin(
         .values(&new_admin)
         .execute(conn)?;
 
-    Ok(AdminResponse {
-        id: new_admin.id,
-        name: new_admin.name,
-        phone: new_admin.phone,
-    })
+    Ok(new_admin)  // ✅ Agora retorna `Admin` corretamente
 }
 
 /// 🔹 Lista todos os administradores.
-pub fn list_admins(conn: &mut PgConnection) -> Result<Vec<AdminResponse>, diesel::result::Error> {
-    let admins: Vec<Admin> = admins::table.load(conn)?;
-
-    Ok(admins.into_iter().map(|admin| AdminResponse {
-        id: admin.id,
-        name: admin.name,
-        phone: admin.phone,
-    }).collect())
+pub fn list_admins(conn: &mut PgConnection) -> Result<Vec<Admin>, diesel::result::Error> {
+    admins::table.load::<Admin>(conn)
 }
 
 /// 🔹 Remove um administrador pelo ID.
