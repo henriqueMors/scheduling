@@ -1,37 +1,36 @@
 use axum::{
-    extract::RequestParts,
+    extract::{FromRequestParts},
     http::{Request, StatusCode},
     middleware::Next,
     response::Response,
-    Extension,
 };
-use headers::{HeaderMapExt, Authorization};
-use crate::config::Config;
-use crate::services::auth_service::validate_jwt;
+use axum_extra::headers::{Authorization, Bearer};
+use axum::headers::HeaderMap;
 use std::sync::Arc;
+use crate::config::Config;
+use jsonwebtoken::{decode, DecodingKey, Validation};
 
-pub async fn auth_middleware<B>(
-    mut req: Request<B>,
+/// Middleware para autenticação via JWT.
+pub async fn auth_middleware(
+    req: Request<axum::body::Body>,
     Extension(config): Extension<Arc<Config>>,
-    next: Next<B>,
+    next: Next,
 ) -> Result<Response, StatusCode> {
-    let headers = req.headers().clone();
+    let headers = req.headers();
 
-    // 🔹 Obtém o token JWT do cabeçalho Authorization
+    // Verifica se existe um cabeçalho Authorization.
     let token = headers
-        .typed_get::<Authorization<String>>()
-        .map(|auth| auth.0);
+        .get(axum::http::header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|auth| auth.strip_prefix("Bearer "))
+        .map(|t| t.to_string());
 
     if let Some(token) = token {
-        if let Ok(user_id) = validate_jwt(&token, &config) {
-            req.extensions_mut().insert(user_id);
+        let key = DecodingKey::from_secret(config.secret_key.as_bytes());
+        if decode::<serde_json::Value>(&token, &key, &Validation::default()).is_ok() {
             return Ok(next.run(req).await);
         }
     }
 
     Err(StatusCode::UNAUTHORIZED)
-}
-
-pub fn auth_middleware() {
-    println!("Middleware de autenticação funcionando!");
 }
