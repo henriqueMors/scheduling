@@ -20,12 +20,12 @@ async fn main() {
     let pool = db::init_db(&config);
 
     let app = Router::new()
-        .nest("/clients", routes::clients::router(pool.clone()))
-        .nest("/reservations", routes::reservations::router(pool.clone()))
-        .nest("/auth", handlers::auth::router(pool.clone())) // ✅ Agora reconhece `router`
-        .nest("/admin", handlers::admin::router(pool.clone())) // ✅ Agora reconhece `router`
-        .layer(Extension(pool))
-        .layer(Extension(config));
+    .nest("/clients", routes::clients::router(pool.clone()))
+    .nest("/reservations", routes::reservations::router(pool.clone()))
+    .nest("/auth", handlers::auth::router(pool.clone(), config.clone())) // ✅ Corrigido!
+    .nest("/admin", handlers::admin::router(pool.clone()))
+    .layer(Extension(pool))
+    .layer(Extension(config));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("🚀 Servidor rodando em http://{}", addr);
