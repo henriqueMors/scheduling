@@ -1,12 +1,12 @@
 // Caso ainda não esteja presente, adicione a linha abaixo no início do seu projeto (por exemplo, em main.rs ou lib.rs)
 // #[macro_use] extern crate diesel;
-
-use diesel::Queryable;
+use diesel::prelude::*;
 use diesel::Insertable;
-use diesel::AsChangeset;
 use serde::{Serialize, Deserialize};
+use crate::schema::users;
+use diesel::Queryable;
+use diesel::AsChangeset;
 use uuid::Uuid;
-use crate::schema::users;  // Certifique-se de que a tabela "users" está definida no seu schema
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
