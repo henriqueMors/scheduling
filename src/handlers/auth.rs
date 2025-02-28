@@ -1,37 +1,28 @@
-use axum::{Router, routing::post, Extension, Json, http::StatusCode};
+use axum::{
+    Router, routing::post, Extension, Json, extract::TypedHeader,
+    http::StatusCode,
+};
 use uuid::Uuid;
 use diesel::prelude::*;
 use crate::db::Pool;
-use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
-use crate::models::user::{User, NewUser, LoginRequest, LoginResponse};
-use crate::schema::users;
 use crate::config::Config;
+use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
+use crate::models::user::{User};
+use crate::schema::users;
+use serde::{Serialize, Deserialize};
+use headers::Authorization;
 
-/// 🔹 Endpoint de registro de usuário.
-pub async fn register_user(
-    Extension(pool): Extension<Pool>,
-    Extension(config): Extension<Config>,
-    Json(mut payload): Json<NewUser>,
-) -> Result<Json<User>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+/// 🔹 Estrutura para requisição de login
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginRequest {
+    pub phone: String,
+    pub password: String,
+}
 
-    // 🔹 Hash da senha
-    payload.password_hash = hash_password(&payload.password_hash)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    // 🔹 Inserção no banco
-    diesel::insert_into(users::table)
-        .values(&payload)
-        .execute(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    // 🔹 Retorna o usuário cadastrado
-    let saved_user = users::table
-        .order(users::id.desc())
-        .first::<User>(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    Ok(Json(saved_user))
+/// 🔹 Estrutura para resposta do login
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginResponse {
+    pub token: String,
 }
 
 /// 🔹 Endpoint de login
@@ -42,7 +33,7 @@ pub async fn login_user(
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Busca usuário pelo telefone
+    // 🔹 Busca o usuário pelo telefone
     let user = users::table
         .filter(users::phone.eq(&payload.phone))
         .first::<User>(&mut conn)
@@ -53,22 +44,18 @@ pub async fn login_user(
         return Err((StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()));
     }
 
-    // 🔹 Gera token JWT
+    // 🔹 Gera um JWT para o usuário autenticado
     let token = generate_jwt(&user, &config)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(LoginResponse {
-        token,
-        user_id: user.id,
-        role: user.role,
-    }))
+    Ok(Json(LoginResponse { token }))
 }
 
 /// 🔹 Define as rotas do módulo `auth`
 pub fn router(pool: Pool, config: Config) -> Router {
     Router::new()
         .route("/register", post(register_user))
-        .route("/login", post(login_user)) // ✅ Adicionado login
+        .route("/login", post(login_user)) // ✅ Adicionando login
         .layer(Extension(pool))
         .layer(Extension(config))
 }
