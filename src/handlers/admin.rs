@@ -5,7 +5,9 @@ use axum::{
 };
 use uuid::Uuid;
 use crate::db::Pool;
-use crate::services::admin_service::{self, NewAdmin, AdminResponse};
+use crate::services::admin_service::{self, AdminResponse};
+use crate::models::admin::NewAdmin;
+
 
 /// 🔹 Adiciona um administrador.
 #[axum::debug_handler]

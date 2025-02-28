@@ -1,8 +1,9 @@
 use diesel::prelude::*;
 use uuid::Uuid;
 use crate::db::Pool;
-use crate::models::admin::{Admin, NewAdmin};
 use crate::schema::admins;
+use crate::models::admin::{Admin, NewAdmin};
+
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct AdminResponse {
