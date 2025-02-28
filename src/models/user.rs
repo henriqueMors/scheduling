@@ -19,7 +19,7 @@ pub struct User {
     pub sms_verified: bool,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Serialize, Deserialize, Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub name: String,
