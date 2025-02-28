@@ -1,11 +1,10 @@
-use serde::{Serialize, Deserialize};
 use diesel::prelude::*;
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
-use crate::schema::admins; // Assumindo que há uma tabela chamada `admins`
+use crate::schema::admins; // Importa a tabela do Diesel
 
-#[derive(Debug, Serialize, Deserialize, Queryable, Insertable)]
-#[table_name = "admins"]
+#[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct Admin {
     pub id: Uuid,
     pub master_id: String,
@@ -15,7 +14,7 @@ pub struct Admin {
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
-#[table_name = "admins"]
+#[diesel(table_name = admins)]
 pub struct NewAdmin {
     pub master_id: String,
     pub name: String,

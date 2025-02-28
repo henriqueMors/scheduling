@@ -1,10 +1,10 @@
-use serde::{Serialize, Deserialize};
 use diesel::prelude::*;
 use uuid::Uuid;
+use serde::{Serialize, Deserialize};
 
 use crate::db::Pool;
 use crate::models::admin::{Admin, NewAdmin};
-use crate::schema::admins; // Assumindo que há uma tabela chamada `admins`
+use crate::schema::admins;
 
 #[derive(Serialize, Deserialize)]
 pub struct AdminResponse {
@@ -18,22 +18,16 @@ pub fn add_admin(
     conn: &mut PgConnection,
     payload: NewAdmin
 ) -> Result<AdminResponse, diesel::result::Error> {
-    let new_admin = Admin {
-        id: Uuid::new_v4(),
-        master_id: payload.master_id,
-        name: payload.name,
-        phone: payload.phone,
-        password_hash: payload.password_hash,
-    };
+    use crate::schema::admins::dsl::*;
 
-    diesel::insert_into(admins::table)
-        .values(&new_admin)
-        .execute(conn)?;
+    let inserted_admin: Admin = diesel::insert_into(admins)
+        .values(&payload)
+        .get_result(conn)?;
 
     Ok(AdminResponse {
-        id: new_admin.id,
-        name: new_admin.name,
-        phone: new_admin.phone,
+        id: inserted_admin.id,
+        name: inserted_admin.name,
+        phone: inserted_admin.phone,
     })
 }
 
@@ -42,6 +36,8 @@ pub fn remove_admin(
     conn: &mut PgConnection,
     admin_id: Uuid
 ) -> Result<usize, diesel::result::Error> {
-    diesel::delete(admins::table.filter(admins::id.eq(admin_id)))
+    use crate::schema::admins::dsl::*;
+    
+    diesel::delete(admins.filter(id.eq(admin_id)))
         .execute(conn)
 }
