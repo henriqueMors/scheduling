@@ -1,12 +1,8 @@
-// Caso ainda não esteja presente, adicione a linha abaixo no início do seu projeto (por exemplo, em main.rs ou lib.rs)
-// #[macro_use] extern crate diesel;
 use diesel::prelude::*;
-use diesel::Insertable;
+use diesel::{Insertable, Queryable, AsChangeset};
 use serde::{Serialize, Deserialize};
-use crate::schema::users;
-use diesel::Queryable;
-use diesel::AsChangeset;
 use uuid::Uuid;
+use crate::schema::users;
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
@@ -19,14 +15,28 @@ pub struct User {
     pub sms_verified: bool,
 }
 
-#[derive(Serialize, Deserialize, Insertable)]
+#[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
+    pub id: Uuid,
     pub name: String,
     pub phone: String,
     pub password_hash: String,
     pub role: String,
     pub sms_verified: bool,
+}
+
+impl Default for NewUser {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            name: String::new(),
+            phone: String::new(),
+            password_hash: String::new(),
+            role: "client".to_string(),
+            sms_verified: false,
+        }
+    }
 }
 
 #[derive(Debug, AsChangeset, Deserialize)]
