@@ -22,7 +22,7 @@ async fn main() {
     let app = Router::new()
     .nest("/clients", routes::clients::router(pool.clone()))
     .nest("/reservations", routes::reservations::router(pool.clone()))
-    .nest("/auth", handlers::auth::router(pool.clone(), config.clone())) // ✅ Corrigido!
+    .nest("/auth", handlers::auth::router(pool.clone(), config.clone()))
     .nest("/admin", handlers::admin::router(pool.clone()))
     .layer(Extension(pool))
     .layer(Extension(config));
