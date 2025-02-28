@@ -2,7 +2,7 @@ use axum::{Router, Extension, middleware};
 use dotenvy::dotenv;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use crate::middleware::auth_middleware::auth_middleware; // ✅ Importando o middleware
+use crate::middleware::auth_middleware::auth_middleware;
 
 mod db;
 mod models;
@@ -12,7 +12,6 @@ mod services;
 mod schema;
 mod config;
 mod utils;
-mod middleware;
 
 #[tokio::main]
 async fn main() {
