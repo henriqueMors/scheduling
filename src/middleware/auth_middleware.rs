@@ -31,3 +31,7 @@ pub async fn auth_middleware<B>(
 
     Err(StatusCode::UNAUTHORIZED)
 }
+
+pub fn auth_middleware() {
+    println!("Middleware de autenticação funcionando!");
+}

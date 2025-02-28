@@ -1,8 +1,7 @@
-use axum::{Router, Extension, middleware};
+use axum::{Router, routing::get, Extension, middleware::from_fn};
 use dotenvy::dotenv;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use crate::middleware::auth_middleware::auth_middleware;
 
 mod db;
 mod models;
@@ -12,6 +11,9 @@ mod services;
 mod schema;
 mod config;
 mod utils;
+mod middleware; // ✅ Definição do módulo antes do uso
+
+use crate::middleware::auth_middleware::auth_middleware; // ✅ Import correto do middleware
 
 #[tokio::main]
 async fn main() {
@@ -25,7 +27,7 @@ async fn main() {
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .nest("/auth", handlers::auth::router(pool.clone(), config.clone())) // ✅ Adicionando `config`
         .nest("/admin", handlers::admin::router(pool.clone()))
-        .layer(middleware::from_fn(auth_middleware)) // ✅ Aplicando autenticação JWT globalmente
+        .layer(from_fn(auth_middleware)) // ✅ Middleware aplicado corretamente
         .layer(Extension(pool))
         .layer(Extension(config));
 
