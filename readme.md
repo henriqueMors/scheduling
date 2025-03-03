@@ -64,3 +64,37 @@ Gestão de Usuários Administrativos
 Permitir que o administrador master adicione e remova administradores secundários.
 Restringir o acesso a essas funções apenas a usuários com role "admin_master".
 Esses requisitos funcionais formam a base da API SaaS para agendamento, possibilitando tanto a interação dos clientes para reservas quanto a gestão administrativa e visualização completa do calendário.
+
+
+##############################################################################
+
+
+🔐 Exemplo de Papéis e Permissões
+✅ 1️⃣ Permissões para Clientes (role = client)
+Clientes só podem acessar suas próprias reservas e não podem gerenciar usuários ou admins.
+🔹 Pode acessar:
+
+GET /reservations/ (somente suas próprias reservas)
+POST /reservations/ (criar reservas)
+GET /clients/{id} (ver seus próprios dados)
+PUT /clients/{id} (atualizar seus dados)
+🔴 Não pode acessar:
+
+DELETE /clients/{id} (não pode excluir sua própria conta)
+Nenhuma rota de administração (/admin)
+🔧 2️⃣ Permissões para Administradores (role = admin)
+Admins podem gerenciar clientes e reservas, mas não podem criar ou remover outros admins.
+🔹 Pode acessar:
+
+Todas as rotas de clientes (/clients/)
+Todas as rotas de reservas (/reservations/)
+Listar admins (GET /admin/)
+🔴 Não pode acessar:
+
+POST /admin/add_admin (não pode criar novos admins)
+DELETE /admin/{id} (não pode remover admins)
+👑 3️⃣ Permissões para Administrador Master (role = admin_master)
+O admin_master tem acesso total ao sistema.
+🔹 Pode acessar:
+✅ Todas as rotas (clientes, reservas, administração).
+
