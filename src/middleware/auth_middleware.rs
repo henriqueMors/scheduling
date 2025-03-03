@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Request, State},
+    extract::Request,
     http::{StatusCode, header},
     middleware::Next,
     response::Response,
@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 
 /// 🔹 Estrutura dos Claims do JWT
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)] // ✅ Agora implementa Clone
 pub struct Claims {
     pub sub: String,   // ID do usuário
     pub exp: usize,    // Expiração do token (timestamp UNIX)
@@ -33,7 +33,6 @@ pub async fn auth_middleware(
         .and_then(|h| h.strip_prefix("Bearer "))
         .map(|t| t.to_string());
 
-    // 🔹 Verifica se o token foi fornecido
     let token = match token {
         Some(t) => t,
         None => {
@@ -87,7 +86,7 @@ pub async fn auth_middleware(
     }
 
     // 🔹 Injeta os dados do usuário autenticado na requisição
-    req.extensions_mut().insert(claims);
+    req.extensions_mut().insert(claims); // ✅ Agora Claims implementa Clone!
 
     // 🔹 Passa a requisição adiante
     Ok(next.run(req).await)
