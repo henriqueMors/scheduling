@@ -1,65 +1,65 @@
 use axum::{
-    extract::State,
-    http::{Request, StatusCode},
+    extract::Request,
+    http::{StatusCode, header},
     middleware::Next,
     response::Response,
-    Extension,
 };
-use headers::{Authorization, HeaderMapExt};
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use std::sync::Arc;
+use axum::Extension;
+use jsonwebtoken::{decode, DecodingKey, Validation};
+use serde::{Deserialize, Serialize};
 use crate::config::Config;
-use crate::models::user::User;
-use crate::db::Pool;
-use crate::schema::users::dsl::*;
-use diesel::prelude::*;
 
 /// 🔹 Estrutura dos Claims do JWT
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-    sub: String,  // ID do usuário
-    exp: usize,   // Expiração do token
-    role: String, // Papel do usuário
+    sub: String,   // ID do usuário
+    exp: usize,    // Expiração do token (timestamp UNIX)
+    role: String,  // Papel do usuário (client, admin, admin_master)
 }
 
-/// 🔐 Middleware de autenticação e controle de permissões
+/// 🔐 Middleware de autenticação JWT com controle de permissões
 pub async fn auth_middleware<B>(
-    State(pool): State<Pool>,
     Extension(config): Extension<Arc<Config>>,
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let headers = req.headers();
 
-    // 🔹 Obtém o token do header Authorization
+    // 🔹 Obtém o token do cabeçalho Authorization
     let token = headers
-        .typed_get::<Authorization<String>>()
-        .map(|auth| auth.0)
-        .ok_or(StatusCode::UNAUTHORIZED)?;
+        .get(header::AUTHORIZATION)
+        .and_then(|h| h.to_str().ok())
+        .and_then(|h| h.strip_prefix("Bearer "))
+        .map(|t| t.to_string());
+
+    // 🔹 Verifica se o token foi fornecido
+    let token = match token {
+        Some(t) => t,
+        None => return Err(StatusCode::UNAUTHORIZED),
+    };
 
     // 🔹 Decodifica o JWT
-    let decoded = decode::<Claims>(
-        &token,
-        &DecodingKey::from_secret(config.secret_key.as_ref()),
-        &Validation::default(),
-    )
-    .map_err(|_| StatusCode::UNAUTHORIZED)?;
+    let key = DecodingKey::from_secret(config.secret_key.as_bytes());
+    let decoded = decode::<Claims>(&token, &key, &Validation::default());
 
-    let claims = decoded.claims;
+    let claims = match decoded {
+        Ok(token_data) => token_data.claims,
+        Err(_) => return Err(StatusCode::UNAUTHORIZED),
+    };
 
-    // 🔹 Busca o usuário no banco de dados para verificar se ainda existe
-    let mut conn = pool.get().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let user = users
-        .filter(id.eq(&claims.sub))
-        .first::<User>(&mut conn)
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+    // 🔹 Verifica a expiração do token
+    let now = chrono::Utc::now().timestamp() as usize;
+    if claims.exp < now {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
 
-    // 🔹 Verifica permissões específicas com base no papel do usuário (`role`)
+    // 🔹 Verifica permissões de acesso com base no papel (`role`)
     let path = req.uri().path();
 
-    match user.role.as_str() {
+    match claims.role.as_str() {
         "client" => {
-            if path.starts_with("/admin") || path.starts_with("/clients") && path != format!("/clients/{}", user.id) {
+            if path.starts_with("/admin") {
                 return Err(StatusCode::FORBIDDEN);
             }
         }
@@ -73,9 +73,6 @@ pub async fn auth_middleware<B>(
         }
         _ => return Err(StatusCode::FORBIDDEN),
     }
-
-    // 🔹 Injeta o usuário autenticado na requisição (se necessário)
-    req.extensions_mut().insert(user);
 
     // 🔹 Passa a requisição adiante
     Ok(next.run(req).await)
