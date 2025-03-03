@@ -19,10 +19,10 @@ struct Claims {
 }
 
 /// 🔐 Middleware de autenticação JWT com controle de permissões
-pub async fn auth_middleware<B>(
+pub async fn auth_middleware(
     Extension(config): Extension<Arc<Config>>,
-    mut req: Request<B>,
-    next: Next<B>,
+    req: Request<axum::body::Body>,
+    next: Next,
 ) -> Result<Response, StatusCode> {
     let headers = req.headers();
 
