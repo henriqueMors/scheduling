@@ -1,8 +1,7 @@
-use axum::{Router, Extension, middleware::from_fn, extract::State};
-use dotenvy::dotenv;
-use std::net::SocketAddr;
+use axum::{Router, Extension, middleware::from_fn};
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use std::net::SocketAddr;
 
 mod db;
 mod models;
@@ -18,22 +17,24 @@ use crate::middleware::auth_middleware::auth_middleware;
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok();
+    dotenvy::dotenv().ok();
 
     let config = Arc::new(config::Config::from_env());
-
-        // 🔥 LOG para depuração:
-        // println!("🔑 SECRET_KEY carregada: {:?}", config.secret_key);
-
-
     let pool = db::init_db(&config);
 
-    let app = Router::new()
+    // 🔹 Rotas abertas (sem autenticação)
+    let auth_routes = handlers::auth::router(pool.clone(), config.clone());
+
+    // 🔹 Rotas protegidas (com autenticação via JWT)
+    let protected_routes = Router::new()
         .nest("/clients", routes::clients::router(pool.clone()))
         .nest("/reservations", routes::reservations::router(pool.clone()))
-        .nest("/auth", handlers::auth::router(pool.clone(), config.clone()))
         .nest("/admin", handlers::admin::router(pool.clone()))
-        .layer(from_fn(auth_middleware)) // ✅ Middleware JWT aplicado corretamente
+        .layer(from_fn(auth_middleware)); // 🔐 Middleware aplicado somente aqui
+
+    let app = Router::new()
+        .nest("/auth", auth_routes) // 🔓 Login e registro SEM autenticação
+        .merge(protected_routes)    // 🔐 Rotas protegidas COM autenticação
         .layer(Extension(pool))
         .layer(Extension(config));
 
