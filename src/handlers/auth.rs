@@ -1,11 +1,11 @@
 use axum::{
     Router, routing::post, Extension, Json,
-    http::StatusCode, extract::TypedHeader,
+    http::StatusCode,
 };
 use diesel::prelude::*;
 use std::sync::Arc;
 use jsonwebtoken::{decode, DecodingKey, Validation};
-use axum_extra::headers::Authorization; // ✅ Agora está certo
+use axum_extra::{TypedHeader, headers::Authorization}; // ✅ Agora está correto
 use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
@@ -47,13 +47,13 @@ pub async fn register_user(
     payload.password_hash = hash_password(&payload.password_hash)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Inserimos o novo usuário no banco
+    // Insere no banco de dados
     diesel::insert_into(users::table)
         .values(&payload)
         .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Recuperamos o usuário salvo
+    // Recupera o usuário salvo
     let saved_user = users::table
         .filter(users::phone.eq(&payload.phone))
         .first::<User>(&mut conn)
