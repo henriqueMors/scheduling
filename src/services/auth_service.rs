@@ -29,7 +29,7 @@ pub fn generate_jwt(user: &User, config: &Config) -> Result<String, jsonwebtoken
     encode(
         &Header::new(Algorithm::HS256),
         &claims,
-        &EncodingKey::from_secret(config.secret_key.as_ref()),
+        &EncodingKey::from_secret(config.secret_key.as_bytes()),
     )
 }
 
