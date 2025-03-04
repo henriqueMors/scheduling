@@ -29,7 +29,7 @@ pub struct NewUser {
 impl Default for NewUser {
     fn default() -> Self {
         Self {
-            id: Uuid::new_v4(),
+            // id: Uuid::new_v4(),
             name: String::new(),
             phone: String::new(),
             password_hash: String::new(),

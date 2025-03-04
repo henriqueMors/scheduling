@@ -5,7 +5,8 @@ use axum::{
 use diesel::prelude::*;
 use std::sync::Arc;
 use jsonwebtoken::{decode, DecodingKey, Validation};
-use axum_extra::{TypedHeader, headers::Authorization}; // ✅ Agora está correto
+use axum_extra::{TypedHeader, headers::Authorization}; // ✅ Correto agora
+use axum_extra::headers::authorization::Bearer; // ✅ Importa Bearer
 use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
@@ -91,15 +92,13 @@ pub async fn login_user(
 pub async fn me(
     Extension(pool): Extension<Pool>,
     Extension(config): Extension<Arc<Config>>,
-    TypedHeader(auth): TypedHeader<Authorization<String>>, // ✅ Agora usa `TypedHeader`
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>, // ✅ Agora usa `Bearer`
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let token = auth.to_string();
-    let token = token.strip_prefix("Bearer ")
-        .ok_or((StatusCode::UNAUTHORIZED, "Invalid token format".to_string()))?;
+    let token = auth.token().to_owned(); // ✅ Extrai corretamente o token
 
     // 🔹 Decodifica o JWT
     let key = DecodingKey::from_secret(config.secret_key.as_bytes());
-    let decoded = decode::<Claims>(token, &key, &Validation::default())
+    let decoded = decode::<Claims>(&token, &key, &Validation::default())
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".to_string()))?;
 
     let user_id = decoded.claims.sub.parse::<Uuid>()
