@@ -37,21 +37,21 @@ async fn main() {
 
     // 🔹 Rotas abertas (sem autenticação)
     let auth_routes = auth_router(pool.clone(), config.clone());
-    
+
     let open_routes = Router::new()
-        .route("/clients", post(create_client)); // Criar cliente SEM autenticação
+        .route("/clients", post(create_client)); // 🔓 Criar cliente sem autenticação
 
     // 🔹 Rotas protegidas (com autenticação via JWT)
     let protected_routes = Router::new()
-        .nest("/clients", clients_router(pool.clone())) // Restante das operações de clientes protegidas
+        .nest("/clients", clients_router(pool.clone())) // 🔐 Protege as demais rotas de clients
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .nest("/admin", handlers::admin::router(pool.clone()))
         .layer(from_fn(auth_middleware)); // 🔐 Middleware JWT
 
     let app = Router::new()
         .nest("/auth", auth_routes)  // 🔓 Login e registro SEM autenticação
-        .merge(open_routes)          // Criar cliente SEM autenticação
-        .merge(protected_routes)     // Restante das rotas protegidas
+        .merge(open_routes)          // 🔓 Criar cliente SEM autenticação
+        .merge(protected_routes)     // 🔐 Restante das rotas protegidas
         .layer(Extension(pool))
         .layer(Extension(config));
 
