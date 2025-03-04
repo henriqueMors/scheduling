@@ -37,7 +37,7 @@ pub fn generate_jwt(user: &User, config: &Config) -> Result<String, jsonwebtoken
 pub fn validate_jwt(token: &str, config: &Config) -> Result<String, jsonwebtoken::errors::Error> {
     let decoded = decode::<Claims>(
         token,
-        &DecodingKey::from_secret(config.secret_key.as_ref()),
+        &DecodingKey::from_secret(config.secret_key.as_bytes()),
         &Validation::new(Algorithm::HS256),
     )?;
 
