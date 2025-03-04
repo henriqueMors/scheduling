@@ -83,7 +83,7 @@ pub fn router(pool: Pool) -> Router {
     Router::new()
         .route("/", get(get_clients).post(create_client))  
         .route(
-            "/:client_id",
+            "/{client_id}",  // ✅ Corrigido! Agora usa `{client_id}`
             get(get_client).put(update_client).delete(delete_client),
         ) 
         .layer(Extension(pool))
