@@ -9,6 +9,7 @@ use axum::Extension;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::config::Config;
+use tracing::{info, error};
 
 /// 🔹 Estrutura dos Claims do JWT
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -37,12 +38,12 @@ pub async fn auth_middleware(
     let token = match token {
         Some(t) => t,
         None => {
-            println!("❌ Nenhum token fornecido no cabeçalho.");
+            error!("❌ Nenhum token fornecido no cabeçalho.");
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
 
-    println!("🔑 Token recebido: {}", token);
+    info!("🔑 Token recebido: {}", token);
 
     // 🔹 Decodifica o JWT
     let key = DecodingKey::from_secret(config.secret_key.as_bytes());
@@ -50,11 +51,11 @@ pub async fn auth_middleware(
 
     let claims = match decoded {
         Ok(token_data) => {
-            println!("✅ Token válido. Claims: {:?}", token_data.claims);
+            info!("✅ Token válido. Claims: {:?}", token_data.claims);
             token_data.claims
         },
         Err(e) => {
-            println!("❌ Erro ao validar token: {:?}", e);
+            error!("❌ Erro ao validar token: {:?}", e);
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
@@ -62,13 +63,14 @@ pub async fn auth_middleware(
     // 🔹 Verifica a expiração do token
     let now = chrono::Utc::now().timestamp() as usize;
     if claims.exp < now {
-        println!("❌ Token expirado!");
+        error!("❌ Token expirado!");
         return Err(StatusCode::UNAUTHORIZED);
     }
 
     // 🔹 Injeta os dados do usuário autenticado na requisição
-    req.extensions_mut().insert(claims);
+    req.extensions_mut().insert(claims.clone());
 
     // 🔹 Passa a requisição adiante
+    info!("✅ Acesso autorizado para usuário: {}", claims.sub);
     Ok(next.run(req).await)
 }
