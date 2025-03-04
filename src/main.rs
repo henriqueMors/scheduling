@@ -21,6 +21,11 @@ async fn main() {
     dotenv().ok();
 
     let config = Arc::new(config::Config::from_env());
+
+        // 🔥 LOG para depuração:
+        // println!("🔑 SECRET_KEY carregada: {:?}", config.secret_key);
+
+
     let pool = db::init_db(&config);
 
     let app = Router::new()
