@@ -123,7 +123,7 @@ pub fn router(pool: Pool, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me))  // ✅ Corrigido para `GET`
+        .route("/me", get(me))
         .layer(Extension(pool))
         .layer(Extension(config))
 }
