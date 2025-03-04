@@ -1,12 +1,12 @@
 use axum::{
-    Router, routing::post, Extension, Json,
+    Router, routing::{post, get}, Extension, Json,
     http::StatusCode,
 };
 use diesel::prelude::*;
 use std::sync::Arc;
 use jsonwebtoken::{decode, DecodingKey, Validation};
-use axum_extra::{TypedHeader, headers::Authorization}; // ✅ Correto agora
-use axum_extra::headers::authorization::Bearer; // ✅ Importa Bearer
+use axum_extra::extract::TypedHeader; // ✅ Corrigido
+use axum_extra::headers::{Authorization, authorization::Bearer}; // ✅ Corrigido
 use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
@@ -42,7 +42,8 @@ pub async fn register_user(
     Extension(pool): Extension<Pool>,
     Json(mut payload): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // Hash da senha
     payload.password_hash = hash_password(&payload.password_hash)
@@ -70,7 +71,8 @@ pub async fn login_user(
     Extension(config): Extension<Arc<Config>>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let user = users::table
         .filter(users::phone.eq(&payload.phone))
@@ -102,9 +104,10 @@ pub async fn me(
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".to_string()))?;
 
     let user_id = decoded.claims.sub.parse::<Uuid>()
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid user ID".to_string()))?;
+        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string()))?;
 
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // 🔹 Busca o usuário pelo ID
     let user = users::table
@@ -120,7 +123,7 @@ pub fn router(pool: Pool, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", post(me)) // ✅ Adicionamos o endpoint `/me`
+        .route("/me", get(me))  // ✅ Corrigido para `GET`
         .layer(Extension(pool))
         .layer(Extension(config))
 }
