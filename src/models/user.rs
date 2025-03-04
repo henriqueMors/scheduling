@@ -11,14 +11,13 @@ pub struct User {
     pub name: String,
     pub phone: String,
     pub password_hash: String,
-    pub role: String,       // "client", "admin" ou "admin_master"
+    pub role: String, // "client", "admin" ou "admin_master"
     pub sms_verified: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    // pub id: Uuid,
     pub name: String,
     pub phone: String,
     pub password_hash: String,
@@ -26,18 +25,7 @@ pub struct NewUser {
     pub sms_verified: bool,
 }
 
-impl Default for NewUser {
-    fn default() -> Self {
-        Self {
-            // id: Uuid::new_v4(),
-            name: String::new(),
-            phone: String::new(),
-            password_hash: String::new(),
-            role: "client".to_string(),
-            sms_verified: false,
-        }
-    }
-}
+// ❌ REMOVIDO `impl Default` para evitar erro (não faz sentido aqui)
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
