@@ -24,13 +24,12 @@ pub async fn create_reservation(
         .first::<Client>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "Client not found for this user".to_string()))?;
 
-    let new_reservation = NewReservation {
-        user_id,              // 🔹 Usa o `user_id` autenticado
-        client_id: client.id, // 🔹 Associa ao `client_id` correspondente
-        service: payload.service,
-        appointment_time: payload.appointment_time,
-        status: "pending".to_string(),  // 🔹 Status inicial
-    };
+        let new_reservation = NewReservation {
+            client_id: user_id,  // 🔹 Usa o `user_id` autenticado
+            service: payload.service,
+            appointment_time: payload.appointment_time,
+            status: "pending".to_string(),  // 🔹 Status inicial
+        };
 
     let reservation = diesel::insert_into(reservations::table)
         .values(&new_reservation)
