@@ -10,10 +10,11 @@ use crate::schema::admins;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DieselUuidWrapper(Uuid);
 
-#[derive(Queryable, Serialize, Deserialize, Debug)]
+#[derive(Queryable, Insertable, AsChangeset, Serialize, Deserialize)]
+#[diesel(table_name = admins)]
 pub struct Admin {
-    pub id: DieselUuidWrapper,
-    pub master_id: Uuid,
+    pub id: DieselUuidWrapper,  // ✅ Corrigido
+    pub master_id: DieselUuidWrapper, // ✅ Corrigido
     pub name: String,
     pub phone: String,
     pub password_hash: String,

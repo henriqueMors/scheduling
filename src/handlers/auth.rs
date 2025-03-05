@@ -56,11 +56,11 @@ pub async fn register_user(
 
     // 🔹 Cria um `Client` automaticamente vinculado ao `User`
     let new_client = NewClient {
-        user_id: saved_user.id,  // 🔹 Vincula o `Client` ao `User`
         name: saved_user.name.clone(),
-        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // 🔹 Gera um email fictício único
+        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // ✅ Email fictício
         phone: Some(saved_user.phone.clone()),
     };
+    
 
     // 🔹 Insere o `Client` no banco de dados
     diesel::insert_into(clients::table)
@@ -110,7 +110,7 @@ pub async fn me(
 
     // 🔹 Busca o usuário pelo ID
     let user = users::table
-        .filter(users::id.eq(user_id))
+        .filter(users::id.eq(DieselUuidWrapper(user_id))) // ✅ Agora o Diesel aceita `Uuid`
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 
