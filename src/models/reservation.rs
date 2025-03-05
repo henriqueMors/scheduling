@@ -3,13 +3,20 @@ use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
 use diesel::{Queryable, Insertable, AsChangeset, Identifiable, Selectable};
 use diesel::pg::Pg;
+use diesel::sql_types::Uuid as DieselUuid;
+use diesel::{AsExpression, FromSqlRow};
 use crate::schema::reservations;
+
+#[derive(AsExpression, FromSqlRow)]
+#[diesel(sql_type = DieselUuid)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct DieselUuidWrapper(Uuid);
 
 #[derive(Debug, Queryable, Selectable, Serialize, Identifiable)]
 #[diesel(table_name = reservations)]
 #[diesel(check_for_backend(Pg))]
 pub struct Reservation {
-    pub id: Uuid,
+    pub id: DieselUuidWrapper,
     pub client_id: Uuid,
     pub service: String,
     pub appointment_time: NaiveDateTime,

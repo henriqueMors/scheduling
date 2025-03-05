@@ -1,13 +1,20 @@
 use diesel::prelude::*;
+use diesel::sql_types::Uuid as DieselUuid;
+use diesel::{AsExpression, FromSqlRow};
 use diesel::{Insertable, Queryable, AsChangeset};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::schema::users;
 
+#[derive(AsExpression, FromSqlRow)]
+#[diesel(sql_type = DieselUuid)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct DieselUuidWrapper(Uuid);
+
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
 pub struct User {
-    pub id: Uuid,
+    pub id: DieselUuidWrapper,
     pub name: String,
     pub phone: String,
     pub password_hash: String,
