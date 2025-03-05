@@ -3,7 +3,7 @@
 diesel::table! {
     admins (id) {
         id -> Uuid,
-        master_id -> Uuid,
+        master_id -> Text,
         name -> Text,
         phone -> Text,
         password_hash -> Text,
@@ -16,6 +16,7 @@ diesel::table! {
         name -> Text,
         phone -> Text,
         email -> Nullable<Text>,
+        user_id -> Uuid,
     }
 }
 
@@ -40,6 +41,7 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(clients -> users (user_id));
 diesel::joinable!(reservations -> clients (client_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
