@@ -5,13 +5,12 @@ use axum::{
 use diesel::prelude::*;
 use std::sync::Arc;
 use jsonwebtoken::{decode, DecodingKey, Validation};
-use axum_extra::extract::TypedHeader; // ✅ Corrigido
-use axum_extra::headers::{Authorization, authorization::Bearer}; // ✅ Corrigido
 use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
-use crate::schema::users;
+use crate::models::client::NewClient; // ✅ Importa `NewClient`
+use crate::schema::{users, clients}; // ✅ Importa `clients` para inserção automática
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
@@ -36,7 +35,7 @@ pub struct Claims {
     pub role: String, // Papel do usuário (client, admin, admin_master)
 }
 
-/// 🔹 Endpoint para registro de usuário
+/// 🔹 Endpoint para registro de usuário (também cria `client`)
 #[axum::debug_handler]
 pub async fn register_user(
     Extension(pool): Extension<Pool>,
@@ -45,23 +44,30 @@ pub async fn register_user(
     let mut conn = pool.get()
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Hash da senha
+    // 🔹 Hash da senha antes de salvar
     payload.password_hash = hash_password(&payload.password_hash)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Insere no banco de dados
-    diesel::insert_into(users::table)
+    // 🔹 Insere o usuário na tabela `users`
+    let user: User = diesel::insert_into(users::table)
         .values(&payload)
+        .get_result(&mut conn)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    // 🔹 Insere automaticamente um cliente correspondente na tabela `clients`
+    let new_client = NewClient {
+        user_id: user.id,  // Usa o mesmo ID do usuário
+        name: user.name.clone(),
+        phone: user.phone.clone(),
+        email: None,  // Opcional, pode ser preenchido depois
+    };
+
+    diesel::insert_into(clients::table)
+        .values(&new_client)
         .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Recupera o usuário salvo
-    let saved_user = users::table
-        .filter(users::phone.eq(&payload.phone))
-        .first::<User>(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    Ok(Json(saved_user))
+    Ok(Json(user))
 }
 
 /// 🔹 Endpoint para login
@@ -93,17 +99,9 @@ pub async fn login_user(
 #[axum::debug_handler]
 pub async fn me(
     Extension(pool): Extension<Pool>,
-    Extension(config): Extension<Arc<Config>>,
-    TypedHeader(auth): TypedHeader<Authorization<Bearer>>, // ✅ Agora usa `Bearer`
+    Extension(claims): Extension<Claims>, // ✅ Obtém `Claims` injetado pelo middleware
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let token = auth.token().to_owned(); // ✅ Extrai corretamente o token
-
-    // 🔹 Decodifica o JWT
-    let key = DecodingKey::from_secret(config.secret_key.as_bytes());
-    let decoded = decode::<Claims>(&token, &key, &Validation::default())
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".to_string()))?;
-
-    let user_id = decoded.claims.sub.parse::<Uuid>()
+    let user_id = claims.sub.parse::<Uuid>()
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string()))?;
 
     let mut conn = pool.get()
