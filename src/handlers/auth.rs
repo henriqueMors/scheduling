@@ -9,7 +9,7 @@ use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
-use crate::models::client::NewClient; // ✅ Importa `NewClient`
+use crate::models::client::NewClient;
 use crate::schema::{users, clients}; // ✅ Importa `clients` para inserção automática
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -35,7 +35,7 @@ pub struct Claims {
     pub role: String, // Papel do usuário (client, admin, admin_master)
 }
 
-/// 🔹 Endpoint para registro de usuário (também cria `client`)
+/// 🔹 Endpoint para registro de usuário (também cria `Client`)
 #[axum::debug_handler]
 pub async fn register_user(
     Extension(pool): Extension<Pool>,
@@ -48,27 +48,27 @@ pub async fn register_user(
     payload.password_hash = hash_password(&payload.password_hash)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Insere o usuário na tabela `users`
-    let user: User = diesel::insert_into(users::table)
+    // 🔹 Insere o usuário na tabela `users` e obtém o usuário salvo
+    let saved_user: User = diesel::insert_into(users::table)
         .values(&payload)
         .get_result(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Insere automaticamente um cliente correspondente na tabela `clients`
+    // 🔹 Cria um `Client` automaticamente vinculado ao `User`
     let new_client = NewClient {
-        user_id: saved_user.id,
+        user_id: saved_user.id,  // 🔹 Vincula o `Client` ao `User`
         name: saved_user.name.clone(),
-        email: "email@exemplo.com".to_string(), // 🔹 Adicione um email válido aqui
+        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // 🔹 Gera um email fictício único
         phone: Some(saved_user.phone.clone()),
     };
-    
 
+    // 🔹 Insere o `Client` no banco de dados
     diesel::insert_into(clients::table)
         .values(&new_client)
         .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(user))
+    Ok(Json(saved_user))
 }
 
 /// 🔹 Endpoint para login
