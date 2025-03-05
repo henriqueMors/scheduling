@@ -1,4 +1,4 @@
-use axum::{Router, Extension, middleware::from_fn, routing::post};
+use axum::{Router, Extension, middleware::from_fn};
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use std::net::SocketAddr;
@@ -17,7 +17,7 @@ mod middleware;
 
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::handlers::auth::router as auth_router;
-use crate::routes::clients::{router as clients_router, create_client};
+use crate::routes::clients::router as clients_router;
 
 #[tokio::main]
 async fn main() {
@@ -38,19 +38,18 @@ async fn main() {
     // 🔹 Rotas abertas (sem autenticação)
     let auth_routes = auth_router(pool.clone(), config.clone());
 
-    let open_routes = Router::new()
-        .route("/clients", post(create_client)); // 🔓 Criar cliente sem autenticação
+    let open_routes = Router::new(); // ❌ Removemos `POST /clients` daqui
 
     // 🔹 Rotas protegidas (com autenticação via JWT)
     let protected_routes = Router::new()
-        .nest("/clients", clients_router(pool.clone())) // 🔐 Protege as demais rotas de clients
+        .nest("/clients", clients_router(pool.clone())) // 🔐 Inclui todas as rotas de `clients`
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .nest("/admin", handlers::admin::router(pool.clone()))
         .layer(from_fn(auth_middleware)); // 🔐 Middleware JWT
 
     let app = Router::new()
         .nest("/auth", auth_routes)  // 🔓 Login e registro SEM autenticação
-        .merge(open_routes)          // 🔓 Criar cliente SEM autenticação
+        .merge(open_routes)          // 🔓 Mantemos a estrutura, mas sem duplicar `/clients`
         .merge(protected_routes)     // 🔐 Restante das rotas protegidas
         .layer(Extension(pool))
         .layer(Extension(config));
