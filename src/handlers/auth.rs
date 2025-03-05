@@ -56,11 +56,12 @@ pub async fn register_user(
 
     // 🔹 Insere automaticamente um cliente correspondente na tabela `clients`
     let new_client = NewClient {
-        user_id: user.id,  // Usa o mesmo ID do usuário
-        name: user.name.clone(),
-        phone: Some(user.phone.clone()),
-        //email: None,  // Opcional, pode ser preenchido depois
+        user_id: saved_user.id,
+        name: saved_user.name.clone(),
+        email: "email@exemplo.com".to_string(), // 🔹 Adicione um email válido aqui
+        phone: Some(saved_user.phone.clone()),
     };
+    
 
     diesel::insert_into(clients::table)
         .values(&new_client)

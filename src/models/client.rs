@@ -1,11 +1,12 @@
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 use diesel::{Queryable, Insertable, AsChangeset, Identifiable, Selectable};
+use diesel::pg::Pg;
 use crate::schema::clients;
 
 #[derive(Debug, Queryable, Selectable, Serialize, Identifiable)]
 #[diesel(table_name = clients)]
-#[diesel(check_for_backend(Pg))] // 🔹 Garante compatibilidade com PostgreSQL
+#[diesel(check_for_backend(Pg))]
 pub struct Client {
     pub id: Uuid,
     pub user_id: Uuid,
