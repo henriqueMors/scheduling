@@ -58,8 +58,8 @@ pub async fn register_user(
     let new_client = NewClient {
         user_id: user.id,  // Usa o mesmo ID do usuário
         name: user.name.clone(),
-        phone: user.phone.clone(),
-        email: None,  // Opcional, pode ser preenchido depois
+        phone: Some(user.phone.clone()),
+        //email: None,  // Opcional, pode ser preenchido depois
     };
 
     diesel::insert_into(clients::table)
