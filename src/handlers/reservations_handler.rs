@@ -18,19 +18,21 @@ pub async fn create_reservation(
     let mut conn = pool.get()
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Verifica se o usuário tem um `client_id` associado
+    // 🔹 Busca o `Client` associado ao `User`
     let client = clients::table
-        .filter(clients::id.eq(user_id))
+        .filter(clients::user_id.eq(user_id)) // ✅ Corrigido para buscar pelo `user_id`
         .first::<Client>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "Client not found for this user".to_string()))?;
 
-        let new_reservation = NewReservation {
-            client_id: user_id,  // 🔹 Usa o `user_id` autenticado
-            service: payload.service,
-            appointment_time: payload.appointment_time,
-            status: "pending".to_string(),  // 🔹 Status inicial
-        };
+    // 🔹 Criação correta da `NewReservation`
+    let new_reservation = NewReservation {
+        client_id: client.id,  // ✅ Agora usa `client.id`
+        service: payload.service.clone(), // ✅ Clona `String`
+        appointment_time: payload.appointment_time.clone(), // ✅ Clona `String`
+        status: "pending".to_string(),  // ✅ Status inicial como String
+    };
 
+    // 🔹 Insere a reserva no banco
     let reservation = diesel::insert_into(reservations::table)
         .values(&new_reservation)
         .get_result::<Reservation>(&mut conn)

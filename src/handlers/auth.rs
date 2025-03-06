@@ -56,10 +56,10 @@ pub async fn register_user(
 
     // 🔹 Cria um `Client` automaticamente vinculado ao `User`
     let new_client = NewClient {
-        user_id: saved_user.id.0,  // 🔹 Pegamos o `Uuid` dentro de `DieselUuidWrapper`
+        user_id: saved_user.id,  // 🔹 Usa diretamente `Uuid`
         name: saved_user.name.clone(),
-        email: Some(format!("email+{}@exemplo.com", saved_user.id.0)), // ✅ Email fictício
-        phone: Some(saved_user.phone.clone()), // ✅ Corrigido
+        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // ✅ Email fictício
+        phone: saved_user.phone.clone(), // ✅ Mantém `Option<String>`
     };
 
     // 🔹 Insere o `Client` no banco de dados
@@ -83,6 +83,7 @@ pub async fn login_user(
 
     let user = users::table
         .filter(users::phone.eq(&payload.phone))
+        .select(User::as_select()) // ✅ Evita erros de mapeamento
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()))?;
 
@@ -110,7 +111,8 @@ pub async fn me(
 
     // 🔹 Busca o usuário pelo ID
     let user = users::table
-        .filter(users::id.eq(user_id)) // ✅ Diesel agora aceita diretamente `Uuid`
+        .filter(users::id.eq(user_id))
+        .select(User::as_select()) // ✅ Diesel agora aceita diretamente `Uuid`
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 
