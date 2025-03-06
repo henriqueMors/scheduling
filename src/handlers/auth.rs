@@ -10,7 +10,7 @@ use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
 use crate::models::client::NewClient;
-use crate::schema::{users, clients}; // ✅ Importa `clients` para inserção automática
+use crate::schema::{users, clients};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
@@ -56,11 +56,11 @@ pub async fn register_user(
 
     // 🔹 Cria um `Client` automaticamente vinculado ao `User`
     let new_client = NewClient {
+        user_id: saved_user.id.0,  // 🔹 Pegamos o `Uuid` dentro de `DieselUuidWrapper`
         name: saved_user.name.clone(),
-        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // ✅ Email fictício
-        phone: Some(saved_user.phone.clone()),
+        email: Some(format!("email+{}@exemplo.com", saved_user.id.0)), // ✅ Email fictício
+        phone: Some(saved_user.phone.clone()), // ✅ Corrigido
     };
-    
 
     // 🔹 Insere o `Client` no banco de dados
     diesel::insert_into(clients::table)
@@ -110,7 +110,7 @@ pub async fn me(
 
     // 🔹 Busca o usuário pelo ID
     let user = users::table
-        .filter(users::id.eq(DieselUuidWrapper(user_id))) // ✅ Agora o Diesel aceita `Uuid`
+        .filter(users::id.eq(user_id)) // ✅ Diesel agora aceita diretamente `Uuid`
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 

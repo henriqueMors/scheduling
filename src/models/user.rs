@@ -6,19 +6,14 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::schema::users;
 
-#[derive(AsExpression, FromSqlRow)]
-#[diesel(sql_type = DieselUuid)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct DieselUuidWrapper(Uuid);
-
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
 pub struct User {
-    pub id: DieselUuidWrapper,
+    pub id: Uuid,  // 🔹 Alterado para `Uuid`
     pub name: String,
     pub phone: String,
     pub password_hash: String,
-    pub role: String, // "client", "admin" ou "admin_master"
+    pub role: String,
     pub sms_verified: bool,
 }
 
@@ -30,21 +25,6 @@ pub struct NewUser {
     pub password_hash: String,
     pub role: String,
     pub sms_verified: bool,
-}
-
-// ❌ REMOVIDO `impl Default` para evitar erro (não faz sentido aqui)
-
-#[derive(Debug, Deserialize)]
-pub struct LoginRequest {
-    pub phone: String,
-    pub password: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct LoginResponse {
-    pub token: String,
-    pub user_id: Uuid,
-    pub role: String,
 }
 
 #[derive(Debug, AsChangeset, Deserialize)]

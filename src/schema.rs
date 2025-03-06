@@ -3,7 +3,7 @@
 diesel::table! {
     admins (id) {
         id -> Uuid,
-        master_id -> Text,
+        master_id -> Uuid,
         name -> Text,
         phone -> Text,
         password_hash -> Text,
