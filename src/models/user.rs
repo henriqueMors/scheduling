@@ -6,15 +6,14 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::schema::users;
 
-#[derive(Debug, Queryable, Serialize, Deserialize)]
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = users)]
+#[diesel(check_for_backend(diesel::pg::Pg))] // ✅ Garante compatibilidade com PostgreSQL
 pub struct User {
-    pub id: Uuid,  // 🔹 Alterado para `Uuid`
-    pub name: String,
+    pub id: Uuid,
     pub phone: String,
     pub password_hash: String,
     pub role: String,
-    pub sms_verified: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

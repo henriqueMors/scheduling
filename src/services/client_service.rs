@@ -16,24 +16,26 @@ pub fn create_client(conn: &mut PgConnection, new_client: NewClient) -> Result<C
 pub fn get_client_by_id(conn: &mut PgConnection, client_id: Uuid) -> Result<Client, Error> {
     clients
         .filter(id.eq(client_id))
-        .select(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .select(Client::as_select()) // ✅ Usa `as_select()`
         .first(conn)
 }
 
 /// Retorna a lista de todos os clientes.
 pub fn get_all_clients(conn: &mut PgConnection) -> Result<Vec<Client>, Error> {
     clients
-        .select(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .select(Client::as_select()) // ✅ Garante compatibilidade
         .load(conn)
 }
 
 /// Atualiza os dados de um cliente identificado pelo ID.
 pub fn update_client(conn: &mut PgConnection, client_id: Uuid, updated_data: UpdateClient) -> Result<Client, Error> {
-    diesel::update(clients.filter(id.eq(client_id))) // ✅ Usa `filter(id.eq(client_id))`
+    diesel::update(clients.filter(id.eq(client_id)))
         .set(&updated_data)
-        .returning(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .returning(Client::as_select()) // ✅ Usa `as_select()`
         .get_result(conn)
 }
+
+
 
 /// Deleta um cliente identificado pelo ID.
 pub fn delete_client(conn: &mut PgConnection, client_id: Uuid) -> Result<usize, Error> {
