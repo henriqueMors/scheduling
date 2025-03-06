@@ -6,11 +6,10 @@ use diesel::sql_types::Uuid as DieselUuid;
 use diesel::{AsExpression, FromSqlRow};
 use crate::schema::clients;
 
-#[derive(Debug, Queryable, Selectable, Serialize, Identifiable)]
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = clients)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Client {
-    pub id: Uuid,  // 🔹 Alterado para `Uuid` diretamente
+    pub id: Uuid,
     pub user_id: Uuid,
     pub name: String,
     pub phone: String,
