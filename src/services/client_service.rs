@@ -8,23 +8,30 @@ use crate::schema::clients::dsl::*; // ✅ Usa `clients::dsl::*` para evitar ref
 pub fn create_client(conn: &mut PgConnection, new_client: NewClient) -> Result<Client, Error> {
     diesel::insert_into(clients)
         .values(&new_client)
+        .returning(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
         .get_result(conn)
 }
 
 /// Busca um cliente pelo ID.
 pub fn get_client_by_id(conn: &mut PgConnection, client_id: Uuid) -> Result<Client, Error> {
-    clients.filter(id.eq(client_id)).first(conn)
+    clients
+        .filter(id.eq(client_id))
+        .select(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .first(conn)
 }
 
 /// Retorna a lista de todos os clientes.
 pub fn get_all_clients(conn: &mut PgConnection) -> Result<Vec<Client>, Error> {
-    clients.load(conn)
+    clients
+        .select(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .load(conn)
 }
 
 /// Atualiza os dados de um cliente identificado pelo ID.
 pub fn update_client(conn: &mut PgConnection, client_id: Uuid, updated_data: UpdateClient) -> Result<Client, Error> {
     diesel::update(clients.filter(id.eq(client_id))) // ✅ Usa `filter(id.eq(client_id))`
         .set(&updated_data)
+        .returning(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
         .get_result(conn)
 }
 

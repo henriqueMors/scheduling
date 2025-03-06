@@ -26,10 +26,10 @@ pub struct NewClient {
     pub email: Option<String>,
 }
 
-#[derive(Debug, AsChangeset, Deserialize)]
+#[derive(Debug, AsChangeset)]
 #[diesel(table_name = clients)]
 pub struct UpdateClient {
     pub name: Option<String>,
-    pub phone: Option<String>,
     pub email: Option<String>,
+    pub phone: Option<String>,
 }
