@@ -11,7 +11,7 @@ use crate::services::auth_service::{hash_password, verify_password, generate_jwt
 use crate::models::user::{User, NewUser};
 use crate::models::client::NewClient;
 use crate::schema::{users, clients};
-use crate::middlewares::auth_middleware::{auth_middleware, Claims}; // ✅ Importamos o middleware JWT
+use crate::middlewares::auth_middleware::{auth_middleware, Claims}; // ✅ Agora encontra o middleware corretamente
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
@@ -101,7 +101,6 @@ pub async fn me(
     let mut conn = pool.get()
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Busca o usuário pelo ID
     let user = users::table
         .filter(users::id.eq(user_id))
         .first::<User>(&mut conn)

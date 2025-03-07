@@ -22,7 +22,7 @@ pub struct Claims {
 /// 🔐 Middleware de autenticação JWT
 pub async fn auth_middleware(
     Extension(config): Extension<Arc<Config>>,
-    mut req: Request<axum::body::Body>,
+    mut req: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {
     let headers = req.headers();
@@ -34,11 +34,11 @@ pub async fn auth_middleware(
         .and_then(|h| h.strip_prefix("Bearer "))
         .map(|t| t.to_string());
 
-    // 🔹 Se o token não for encontrado, retorna erro
+    // 🔹 Verifica se o token foi fornecido
     let token = match token {
         Some(t) => t,
         None => {
-            error!("❌ Nenhum token fornecido.");
+            error!("❌ Nenhum token fornecido no cabeçalho.");
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
@@ -67,9 +67,10 @@ pub async fn auth_middleware(
         return Err(StatusCode::UNAUTHORIZED);
     }
 
-    // 🔹 Injeta `Claims` na requisição para que os handlers possam acessá-lo
+    // 🔹 Injeta os dados do usuário autenticado na requisição
     req.extensions_mut().insert(claims.clone());
 
+    // 🔹 Passa a requisição adiante
     info!("✅ Acesso autorizado para usuário: {}", claims.sub);
     Ok(next.run(req).await)
 }
