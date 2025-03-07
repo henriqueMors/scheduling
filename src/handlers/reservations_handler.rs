@@ -20,7 +20,8 @@ pub async fn create_reservation(
 
     // 🔹 Busca o `Client` associado ao `User`
     let client = clients::table
-        .filter(clients::user_id.eq(user_id)) // ✅ Corrigido para buscar pelo `user_id`
+        .filter(clients::user_id.eq(user_id))
+        .select(Client::as_select())  // 🔹 Garante compatibilidade Diesel
         .first::<Client>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "Client not found for this user".to_string()))?;
 
