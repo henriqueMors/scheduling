@@ -93,7 +93,7 @@ pub async fn login_user(
 #[axum::debug_handler]
 pub async fn me(
     Extension(pool): Extension<Pool>,
-    Extension(claims): Extension<Claims>, // ✅ Agora o middleware garante que `Claims` está presente
+    Extension(claims): Extension<Claims>, // ✅ Middleware agora garante que `Claims` está presente
 ) -> Result<Json<User>, (StatusCode, String)> {
     let user_id = claims.sub.parse::<Uuid>()
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string()))?;
@@ -115,7 +115,7 @@ pub fn router(pool: Pool, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me).layer(middleware::from_fn_with_state(config.clone(), auth_middleware))) // ✅ Middleware antes de `/me`
+        .route("/me", get(me).layer(middleware::from_fn(auth_middleware))) // ✅ Middleware antes de `/me`
         .layer(Extension(pool))
         .layer(Extension(config))
 }
