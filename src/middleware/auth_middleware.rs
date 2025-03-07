@@ -3,9 +3,9 @@ use axum::{
     http::{StatusCode, header},
     middleware::Next,
     response::Response,
+    Extension,
 };
 use std::sync::Arc;
-use axum::Extension;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::config::Config;
@@ -19,7 +19,7 @@ pub struct Claims {
     pub role: String, // Papel do usuário (client, admin, admin_master)
 }
 
-/// 🔐 Middleware de autenticação JWT com logs detalhados
+/// 🔐 Middleware de autenticação JWT
 pub async fn auth_middleware(
     Extension(config): Extension<Arc<Config>>,
     mut req: Request<axum::body::Body>,
@@ -34,11 +34,11 @@ pub async fn auth_middleware(
         .and_then(|h| h.strip_prefix("Bearer "))
         .map(|t| t.to_string());
 
-    // 🔹 Verifica se o token foi fornecido
+    // 🔹 Se o token não for encontrado, retorna erro
     let token = match token {
         Some(t) => t,
         None => {
-            error!("❌ Nenhum token fornecido no cabeçalho.");
+            error!("❌ Nenhum token fornecido.");
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
@@ -67,10 +67,9 @@ pub async fn auth_middleware(
         return Err(StatusCode::UNAUTHORIZED);
     }
 
-    // 🔹 Injeta os dados do usuário autenticado na requisição
+    // 🔹 Injeta `Claims` na requisição para que os handlers possam acessá-lo
     req.extensions_mut().insert(claims.clone());
 
-    // 🔹 Passa a requisição adiante
     info!("✅ Acesso autorizado para usuário: {}", claims.sub);
     Ok(next.run(req).await)
 }

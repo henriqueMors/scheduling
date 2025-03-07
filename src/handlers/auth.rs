@@ -1,5 +1,5 @@
 use axum::{
-    Router, routing::{post, get}, Extension, Json,
+    Router, routing::{post, get}, Extension, Json, middleware,
     http::StatusCode,
 };
 use diesel::prelude::*;
@@ -11,6 +11,7 @@ use crate::services::auth_service::{hash_password, verify_password, generate_jwt
 use crate::models::user::{User, NewUser};
 use crate::models::client::NewClient;
 use crate::schema::{users, clients};
+use crate::middlewares::auth_middleware::{auth_middleware, Claims}; // ✅ Importamos o middleware JWT
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
@@ -25,14 +26,6 @@ pub struct LoginRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginResponse {
     pub token: String,
-}
-
-/// 🔹 Estrutura para os claims do JWT
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Claims {
-    pub sub: String,  // ID do usuário
-    pub exp: usize,   // Expiração do token (timestamp UNIX)
-    pub role: String, // Papel do usuário (client, admin, admin_master)
 }
 
 /// 🔹 Endpoint para registro de usuário (também cria `Client`)
@@ -56,10 +49,10 @@ pub async fn register_user(
 
     // 🔹 Cria um `Client` automaticamente vinculado ao `User`
     let new_client = NewClient {
-        user_id: saved_user.id,  // 🔹 Usa diretamente `Uuid`
+        user_id: saved_user.id,  
         name: saved_user.name.clone(),
-        email: Some(format!("email+{}@exemplo.com", saved_user.id)), // ✅ Email fictício
-        phone: saved_user.phone.clone(), // ✅ Mantém `Option<String>`
+        email: Some(format!("email+{}@exemplo.com", saved_user.id)), 
+        phone: saved_user.phone.clone(), 
     };
 
     // 🔹 Insere o `Client` no banco de dados
@@ -83,7 +76,6 @@ pub async fn login_user(
 
     let user = users::table
         .filter(users::phone.eq(&payload.phone))
-        .select(User::as_select()) // ✅ Evita erros de mapeamento
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()))?;
 
@@ -101,7 +93,7 @@ pub async fn login_user(
 #[axum::debug_handler]
 pub async fn me(
     Extension(pool): Extension<Pool>,
-    Extension(claims): Extension<Claims>, // ✅ Obtém `Claims` injetado pelo middleware
+    Extension(claims): Extension<Claims>, // ✅ Agora o middleware garante que `Claims` está presente
 ) -> Result<Json<User>, (StatusCode, String)> {
     let user_id = claims.sub.parse::<Uuid>()
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string()))?;
@@ -112,7 +104,6 @@ pub async fn me(
     // 🔹 Busca o usuário pelo ID
     let user = users::table
         .filter(users::id.eq(user_id))
-        .select(User::as_select()) // ✅ Diesel agora aceita diretamente `Uuid`
         .first::<User>(&mut conn)
         .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 
@@ -124,7 +115,7 @@ pub fn router(pool: Pool, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me))
+        .route("/me", get(me).layer(middleware::from_fn_with_state(config.clone(), auth_middleware))) // ✅ Middleware antes de `/me`
         .layer(Extension(pool))
         .layer(Extension(config))
 }
