@@ -8,7 +8,7 @@ use crate::schema::clients::dsl::*; // ✅ Usa `clients::dsl::*` para evitar ref
 pub fn create_client(conn: &mut PgConnection, new_client: NewClient) -> Result<Client, Error> {
     diesel::insert_into(clients)
         .values(&new_client)
-        .returning(clients::all_columns()) // ✅ Chama `all_columns()` corretamente
+        .returning(Client::as_select()) // ✅ Usa `as_select()`
         .get_result(conn)
 }
 
@@ -16,7 +16,7 @@ pub fn create_client(conn: &mut PgConnection, new_client: NewClient) -> Result<C
 pub fn get_client_by_id(conn: &mut PgConnection, client_id: Uuid) -> Result<Client, Error> {
     clients
         .filter(id.eq(client_id))
-        .select(Client::as_select()) // ✅ Usa `as_select()`
+        .select(Client::as_select()) // ✅ Usa `as_select()` corretamente
         .first(conn)
 }
 
@@ -35,10 +35,8 @@ pub fn update_client(conn: &mut PgConnection, client_id: Uuid, updated_data: Upd
         .get_result(conn)
 }
 
-
-
 /// Deleta um cliente identificado pelo ID.
 pub fn delete_client(conn: &mut PgConnection, client_id: Uuid) -> Result<usize, Error> {
-    diesel::delete(clients.filter(id.eq(client_id))) // ✅ Mesmo ajuste para `delete_client`
+    diesel::delete(clients.filter(id.eq(client_id)))
         .execute(conn)
 }
