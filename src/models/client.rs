@@ -1,15 +1,12 @@
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
-use diesel::{Queryable, Insertable, AsChangeset, Identifiable, Selectable};
-use diesel::pg::Pg;
-use diesel::sql_types::Uuid as DieselUuid;
-use diesel::{AsExpression, FromSqlRow};
-use crate::schema::clients;
 use diesel::prelude::*;
+use diesel::{Queryable, Insertable, AsChangeset, Identifiable, Selectable};
+use crate::schema::clients;
 
 #[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = clients)]
-#[diesel(check_for_backend(diesel::pg::Pg))] // ✅ Garante compatibilidade com PostgreSQL
+#[diesel(check_for_backend(diesel::pg::Pg))] // 🔹 Garante compatibilidade com PostgreSQL
 pub struct Client {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -18,7 +15,7 @@ pub struct Client {
     pub email: Option<String>,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Serialize, Deserialize)]
 #[diesel(table_name = clients)]
 pub struct NewClient {
     pub user_id: Uuid,
@@ -27,7 +24,7 @@ pub struct NewClient {
     pub email: Option<String>,
 }
 
-#[derive(Debug, AsChangeset)]
+#[derive(Debug, AsChangeset, Serialize, Deserialize)]
 #[diesel(table_name = clients)]
 pub struct UpdateClient {
     pub name: Option<String>,
