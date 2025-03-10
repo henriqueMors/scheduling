@@ -11,72 +11,95 @@ use crate::db::Pool;
 use crate::models::reservation::{Reservation, NewReservation, UpdateReservation};
 use crate::services::reservation_service;
 
-/// Endpoint para criar uma reserva.
+/// 🔹 Cria uma reserva.
 pub async fn create_reservation(
     Extension(pool): Extension<Pool>,
     Json(payload): Json<NewReservation>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    
+    let mut conn = pool.get().map_err(map_db_error)?;
+
     reservation_service::create_reservation(&mut conn, payload)
         .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        .map_err(map_internal_error)
 }
 
-/// Endpoint para buscar uma reserva específica.
+/// 🔹 Busca uma reserva específica por ID.
 pub async fn get_reservation(
     Extension(pool): Extension<Pool>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get().map_err(map_db_error)?;
 
     reservation_service::get_reservation_by_id(&mut conn, reservation_id)
         .map(Json)
-        .map_err(|e| (StatusCode::NOT_FOUND, e.to_string()))
+        .map_err(map_not_found_error)
 }
 
-/// Endpoint para listar todas as reservas.
+/// 🔹 Lista todas as reservas.
 pub async fn get_reservations(
     Extension(pool): Extension<Pool>,
 ) -> Result<Json<Vec<Reservation>>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get().map_err(map_db_error)?;
 
     reservation_service::list_reservations(&mut conn)
         .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        .map_err(map_internal_error)
 }
 
-/// Endpoint para atualizar uma reserva.
+/// 🔹 Atualiza uma reserva existente.
 pub async fn update_reservation(
     Extension(pool): Extension<Pool>,
     Path(reservation_id): Path<Uuid>,
     Json(payload): Json<UpdateReservation>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get().map_err(map_db_error)?;
 
     reservation_service::update_reservation(&mut conn, reservation_id, payload)
         .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        .map_err(map_internal_error)
 }
 
-/// Endpoint para deletar uma reserva.
+/// 🔹 Remove uma reserva por ID.
 pub async fn delete_reservation(
     Extension(pool): Extension<Pool>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut conn = pool.get().map_err(map_db_error)?;
 
     match reservation_service::delete_reservation(&mut conn, reservation_id) {
         Ok(deleted) if deleted > 0 => Ok(Json(json!({"message": "Reservation deleted"}))),
-        Ok(_) => Err((StatusCode::NOT_FOUND, "Reservation not found".into())),
+        Ok(_) => Err((StatusCode::NOT_FOUND, "Reservation not found".to_string())),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }
 }
 
-/// Agrega as rotas de reservas em um Router do Axum.
+/// 🔹 Mapeia erros de banco de dados (Diesel)
+fn map_db_error(e: diesel::r2d2::PoolError) -> (StatusCode, String) {
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to get DB connection: {}", e))
+}
+
+/// 🔹 Mapeia erros internos
+fn map_internal_error(e: diesel::result::Error) -> (StatusCode, String) {
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error: {}", e))
+}
+
+/// 🔹 Mapeia erro de "não encontrado"
+fn map_not_found_error(e: diesel::result::Error) -> (StatusCode, String) {
+    match e {
+        diesel::result::Error::NotFound => (StatusCode::NOT_FOUND, "Reservation not found".to_string()),
+        _ => map_internal_error(e),
+    }
+}
+
+/// 🔹 Agrega as rotas de reservas.
 pub fn router(pool: Pool) -> Router {
     Router::new()
         .route("/", get(get_reservations).post(create_reservation))
-        .route("/{reservation_id}", get(get_reservation).put(update_reservation).delete(delete_reservation))
+        .route(
+            "/:reservation_id",
+            get(get_reservation)
+                .put(update_reservation)
+                .delete(delete_reservation),
+        )
         .layer(Extension(pool))
 }

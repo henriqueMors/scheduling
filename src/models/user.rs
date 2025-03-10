@@ -1,15 +1,13 @@
-use diesel::prelude::*;
-use diesel::sql_types::Uuid as DieselUuid;
-use diesel::{AsExpression, FromSqlRow};
-use diesel::{Insertable, Queryable, AsChangeset};
+use diesel::{Insertable, Queryable, AsChangeset, Identifiable, Selectable};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::schema::users;
 
-#[derive(Debug, Queryable, Serialize, Deserialize, Selectable)]
+#[derive(Debug, Queryable, Serialize, Deserialize, Selectable, Identifiable)]
 #[diesel(table_name = users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]  // ✅ Compatibilidade com PostgreSQL
 pub struct User {
-    pub id: Uuid,  // 🔹 Alterado para `Uuid`
+    pub id: Uuid,  // 🔹 Mantido como `Uuid`
     pub name: String,
     pub phone: String,
     pub password_hash: String,
