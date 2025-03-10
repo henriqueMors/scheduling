@@ -6,7 +6,6 @@ use diesel::prelude::*;
 use uuid::Uuid;
 use crate::db::Pool;
 use crate::models::reservation::{Reservation, NewReservation};
-use crate::models::client::Client;
 use crate::schema::{reservations, clients};
 
 #[axum::debug_handler]
