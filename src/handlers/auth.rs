@@ -11,7 +11,7 @@ use crate::services::auth_service::{hash_password, verify_password, generate_jwt
 use crate::models::user::{User, NewUser};
 use crate::models::client::NewClient;
 use crate::schema::{users, clients};
-use crate::middlewares::auth_middleware::{auth_middleware, Claims}; // ✅ Agora encontra o middleware corretamente
+use crate::middleware::auth_middleware::{auth_middleware, Claims}; // ✅ Agora encontra o middleware corretamente
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
