@@ -5,10 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Axum e dependências relacionadas
-axum = { version = "0.8.1", features = ["macros", "http1", "http2"] }
-axum-extra = { version = "0.10.0", features = ["typed-header"] }
-
-hyper = { version = "0.14", features = ["http1", "http2", "server"] }
+axum = { version = "0.7.5", features = ["macros", "http1", "http2"] }
 tower = { version = "0.4", features = ["util"] }
 tower-http = { version = "0.5", features = ["cors", "trace"] }
 
@@ -18,10 +15,10 @@ serde_json = "1"
 
 # Banco de dados e migrações
 diesel = { version = "2.2", features = ["postgres", "r2d2", "chrono", "uuid"] }
-diesel_migrations = "2"
+diesel_migrations = "2.1.0"
 
 # Gerenciamento de variáveis de ambiente
-dotenvy = "0.15"
+dotenvy = "0.15.7"
 
 # Datas e horas
 chrono = { version = "0.4", features = ["serde"] }
@@ -30,18 +27,21 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.4", features = ["v4", "serde"] }
 
 # Autenticação e segurança
-jsonwebtoken = "7"
-argon2 = "0.5"
+jsonwebtoken = "9.3"
+argon2 = "0.5.2"
 rand = "0.8"
 
-# Tokio
+# Tokio (runtime assíncrono)
 tokio = { version = "1", features = ["full"] }
 
-# Header e autenticação
-headers = "0.3"
-
+# Regex e validação
 regex = "1"
+once_cell = "1.19" # 🔥 Melhor substituto para lazy_static
 
-# Para configurar logs
+# Configuração de logs
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Testes (opcional, apenas se você for fazer testes)
+[dev-dependencies]
+tokio-test = "0.4"
