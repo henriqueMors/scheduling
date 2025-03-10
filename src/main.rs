@@ -18,7 +18,6 @@ mod middleware;
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::handlers::auth::router as auth_router;
 use crate::routes::reservations::router as reservations_router;
-use crate::handlers::admin::router as admin_router;
 
 #[tokio::main]
 async fn main() {
