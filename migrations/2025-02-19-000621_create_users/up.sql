@@ -7,6 +7,9 @@ CREATE TABLE users (
     name TEXT NOT NULL,
     phone TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    role TEXT NOT NULL,
+    
+    -- Adiciona um valor padrão e uma restrição para os valores permitidos
+    role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'admin', 'admin_master')),
+
     sms_verified BOOLEAN NOT NULL DEFAULT false
 );
