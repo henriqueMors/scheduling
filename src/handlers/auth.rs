@@ -4,12 +4,11 @@ use axum::{
 };
 use diesel::prelude::*;
 use std::sync::Arc;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
-use crate::schema::{users, clients};
+use crate::schema::users;
 use crate::middleware::auth_middleware::{auth_middleware, Claims};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -27,7 +26,7 @@ pub struct LoginResponse {
     pub token: String,
 }
 
-/// 🔹 Endpoint para registro de usuário (também cria `Client`)
+/// 🔹 Endpoint para registro de usuário
 #[axum::debug_handler]
 pub async fn register_user(
     Extension(pool): Extension<Pool>,
@@ -40,24 +39,10 @@ pub async fn register_user(
     payload.password_hash = hash_password(&payload.password_hash)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // 🔹 Insere o usuário na tabela `users` e obtém o usuário salvo
+    // 🔹 Insere o usuário na tabela `users`
     let saved_user: User = diesel::insert_into(users::table)
         .values(&payload)
         .get_result(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    // 🔹 Cria um `Client` automaticamente vinculado ao `User`
-    let new_client = NewClient {
-        user_id: saved_user.id,  
-        name: saved_user.name.clone(),
-        email: Some(format!("email+{}@exemplo.com", saved_user.id)), 
-        phone: saved_user.phone.clone(), 
-    };
-
-    // 🔹 Insere o `Client` no banco de dados
-    diesel::insert_into(clients::table)
-        .values(&new_client)
-        .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(saved_user))
