@@ -10,6 +10,7 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use tracing::{info, error};
+use uuid::Uuid;
 
 /// 🔹 Estrutura dos Claims do JWT
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -50,10 +51,7 @@ pub async fn auth_middleware(
     let decoded = decode::<Claims>(&token, &key, &Validation::default());
 
     let claims = match decoded {
-        Ok(token_data) => {
-            info!("✅ Token válido. Claims: {:?}", token_data.claims);
-            token_data.claims
-        },
+        Ok(token_data) => token_data.claims,
         Err(e) => {
             error!("❌ Erro ao validar token: {:?}", e);
             return Err(StatusCode::UNAUTHORIZED);
@@ -67,10 +65,20 @@ pub async fn auth_middleware(
         return Err(StatusCode::UNAUTHORIZED);
     }
 
-    // 🔹 Injeta os dados do usuário autenticado na requisição
-    req.extensions_mut().insert(claims.clone());
+    // 🔹 Converte o `sub` para `Uuid`
+    let user_id = claims
+        .sub
+        .parse::<Uuid>()
+        .map_err(|_| {
+            error!("❌ ID inválido no token.");
+            StatusCode::BAD_REQUEST
+        })?;
+
+    // ✅ Injeta diretamente o `user_id` na requisição
+    req.extensions_mut().insert(user_id);
+
+    info!("✅ Acesso autorizado para usuário com ID: {}", user_id);
 
     // 🔹 Passa a requisição adiante
-    info!("✅ Acesso autorizado para usuário: {}", claims.sub);
     Ok(next.run(req).await)
 }
