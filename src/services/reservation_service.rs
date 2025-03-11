@@ -47,7 +47,6 @@ pub fn list_reservations_by_user(
         .load::<Reservation>(conn)
 }
 
-
 /// ✅ Deleta uma reserva.
 pub fn delete_reservation(conn: &mut PgConnection, reservation_id: Uuid) -> Result<usize, Error> {
     diesel::delete(reservations.filter(id.eq(reservation_id)))
