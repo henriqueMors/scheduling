@@ -15,8 +15,8 @@ use uuid::Uuid;
 /// 🔹 Estrutura dos Claims do JWT
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: String,  // ID do usuário
-    pub exp: usize,   // Expiração do token (timestamp UNIX)
+    pub sub: String, // ID do usuário
+    pub exp: usize, // Expiração do token (timestamp UNIX)
     pub role: String, // Papel do usuário (client, admin, admin_master)
 }
 
@@ -35,7 +35,6 @@ pub async fn auth_middleware(
         .and_then(|h| h.strip_prefix("Bearer "))
         .map(|t| t.to_string());
 
-    // 🔹 Verifica se o token foi fornecido
     let token = match token {
         Some(t) => t,
         None => {
@@ -58,7 +57,7 @@ pub async fn auth_middleware(
         }
     };
 
-    // 🔹 Verifica a expiração do token
+    // 🔹 Verifica expiração do token
     let now = chrono::Utc::now().timestamp() as usize;
     if claims.exp < now {
         error!("❌ Token expirado!");
@@ -74,11 +73,39 @@ pub async fn auth_middleware(
             StatusCode::BAD_REQUEST
         })?;
 
-    // ✅ Injeta diretamente o `user_id` na requisição
+    // ✅ Injeta o `user_id` e `role` na requisição
     req.extensions_mut().insert(user_id);
+    req.extensions_mut().insert(claims.role.clone());
 
-    info!("✅ Acesso autorizado para usuário com ID: {}", user_id);
+    info!(
+        "✅ Acesso autorizado para usuário com ID: {} (Role: {})",
+        user_id, claims.role
+    );
 
     // 🔹 Passa a requisição adiante
     Ok(next.run(req).await)
+}
+
+/// 🔒 Middleware para validar papel do usuário
+pub async fn require_role(
+    required_role: String,
+    mut req: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let role = req.extensions().get::<String>().cloned();
+
+    match role {
+        Some(user_role) if user_role == required_role || user_role == "admin_master" => {
+            info!("✅ Acesso autorizado para role: {}", user_role);
+            Ok(next.run(req).await)
+        }
+        Some(user_role) => {
+            error!("❌ Acesso negado para role: {}", user_role);
+            Err(StatusCode::FORBIDDEN)
+        }
+        None => {
+            error!("❌ Role não encontrado.");
+            Err(StatusCode::UNAUTHORIZED)
+        }
+    }
 }
