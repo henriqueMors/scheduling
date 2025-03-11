@@ -16,13 +16,14 @@ mod utils;
 mod middleware;
 
 use crate::middleware::auth_middleware::auth_middleware;
+use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::handlers::auth::router as auth_router;
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
 
-    // 🔹 Inicializa logs estruturados com `tracing`
+    // 🔹 Inicializa logs com `tracing`
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::DEBUG)
         .finish();
@@ -30,21 +31,22 @@ async fn main() {
         .expect("Falha ao configurar logs");
 
     // 🔹 Carrega as configurações
-    let config = Arc::new(config::Config::from_env().map_err(|e| panic!("Config error: {}", e)).unwrap());
+    let config = Arc::new(config::Config::from_env().expect("Failed to load config"));
     let pool = db::init_db(&config);
 
     tracing::info!("📡 Conectado ao banco de dados");
 
-    // 🔹 Rotas abertas (sem autenticação)
-    let auth_routes = auth_router(pool.clone(), config.clone());
+    // 🔹 Rotas abertas (sem autenticação) → RATE LIMIT DE 5 REQ/S
+    let auth_routes = auth_router(pool.clone(), config.clone())
+        .layer(from_fn(rate_limit_middleware)); 
 
     let open_routes = Router::new();
 
-    // 🔹 Rotas protegidas (com autenticação via JWT)
+    // 🔹 Rotas protegidas (com autenticação) → RATE LIMIT DE 5 REQ/S
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
-        // ❌ Removido `admin_router`
-        .layer(from_fn(auth_middleware));
+        .layer(from_fn(auth_middleware))
+        .layer(from_fn(rate_limit_middleware)); 
 
     let app = Router::new()
         .nest("/auth", auth_routes)
