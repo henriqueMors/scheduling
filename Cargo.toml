@@ -7,7 +7,7 @@ edition = "2021"
 # Axum e dependências relacionadas
 axum = { version = "0.7.5", features = ["macros", "http1", "http2"] }
 tower = { version = "0.4", features = ["util"] }
-tower-http = { version = "0.5", features = ["cors", "trace", "request-id"] } # ✅ Substituído `limit` por `request-id`
+tower-http = { version = "0.5", features = ["cors", "trace", "timeout", "limit"] }
 
 # Serialização e desserialização
 serde = { version = "1", features = ["derive"] }
@@ -41,9 +41,7 @@ once_cell = "1.19" # 🔥 Melhor substituto para lazy_static
 # Configuração de logs
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-log4rs = "1.2"
-log = "0.4" # ✅ Adicionado corretamente
 
-# Testes (opcional, apenas se você for fazer testes)
+# Testes (opcional)
 [dev-dependencies]
 tokio-test = "0.4"

@@ -1,4 +1,4 @@
-use axum::{Router, Extension};
+use axum::{Router, Extension, middleware::from_fn};
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use std::net::SocketAddr;
@@ -39,7 +39,7 @@ async fn main() {
 
     // ✅ Rotas abertas (sem autenticação) → RATE LIMIT + CORS
     let auth_routes = auth_router(pool.clone(), config.clone())
-        .layer(rate_limit_middleware()) // ✅ Agora o `rate_limit_middleware` é aplicado diretamente!
+        .layer(rate_limit_middleware()) // ✅ Adicionando camada de Rate Limit
         .layer(cors_middleware());
 
     let open_routes = Router::new()
@@ -48,11 +48,9 @@ async fn main() {
     // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
-        .layer(rate_limit_middleware()) // ✅ Aplicação direta do rate limit
-        .layer(cors_middleware())
-        .layer(Extension(pool.clone()))
-        .layer(Extension(config.clone()))
-        .layer(axum::middleware::from_fn(auth_middleware)); // ✅ Autenticação
+        .layer(from_fn(auth_middleware))
+        .layer(rate_limit_middleware()) // ✅ Aplicando Rate Limit diretamente
+        .layer(cors_middleware());
 
     let app = Router::new()
         .nest("/auth", auth_routes)
