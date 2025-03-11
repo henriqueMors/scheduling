@@ -12,6 +12,7 @@ use crate::schema::users;
 use crate::middleware::auth_middleware::{auth_middleware, Claims};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use tracing::{info, error}; // ✅ Importando `tracing` para logs
 
 /// 🔹 Estrutura para requisição de login
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,17 +34,28 @@ pub async fn register_user(
     Json(mut payload): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
     let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao obter conexão com o banco de dados: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
 
     // 🔹 Hash da senha antes de salvar
     payload.password_hash = hash_password(&payload.password_hash)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao fazer hash da senha: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
 
     // 🔹 Insere o usuário na tabela `users`
     let saved_user: User = diesel::insert_into(users::table)
         .values(&payload)
         .get_result(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao registrar usuário: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    info!("✅ Novo usuário registrado com ID: {}", saved_user.id);
 
     Ok(Json(saved_user))
 }
@@ -56,19 +68,33 @@ pub async fn login_user(
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
     let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao obter conexão com o banco de dados: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    info!("🔑 Tentativa de login com telefone: {}", payload.phone);
 
     let user = users::table
         .filter(users::phone.eq(&payload.phone))
         .first::<User>(&mut conn)
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()))?;
+        .map_err(|_| {
+            error!("❌ Tentativa de login falhou para telefone: {}", payload.phone);
+            (StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string())
+        })?;
 
     if !verify_password(&user.password_hash, &payload.password) {
+        error!("❌ Senha incorreta para telefone: {}", payload.phone);
         return Err((StatusCode::UNAUTHORIZED, "Invalid phone or password".to_string()));
     }
 
     let token = generate_jwt(&user, &config)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao gerar token JWT para telefone: {} - Erro: {:?}", payload.phone, e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    info!("✅ Login bem-sucedido para telefone: {}", payload.phone);
 
     Ok(Json(LoginResponse { token }))
 }
@@ -80,15 +106,26 @@ pub async fn me(
     Extension(claims): Extension<Claims>, // ✅ Middleware agora garante que `Claims` está presente
 ) -> Result<Json<User>, (StatusCode, String)> {
     let user_id = claims.sub.parse::<Uuid>()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string()))?;
+        .map_err(|_| {
+            error!("❌ ID de usuário inválido no token");
+            (StatusCode::BAD_REQUEST, "Invalid user ID format".to_string())
+        })?;
 
     let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            error!("❌ Falha ao obter conexão com o banco de dados: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
 
     let user = users::table
         .filter(users::id.eq(user_id))
         .first::<User>(&mut conn)
-        .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
+        .map_err(|_| {
+            error!("❌ Usuário com ID {} não encontrado", user_id);
+            (StatusCode::NOT_FOUND, "User not found".to_string())
+        })?;
+
+    info!("✅ Dados do usuário retornados para ID: {}", user_id);
 
     Ok(Json(user))
 }

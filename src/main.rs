@@ -24,20 +24,20 @@ use crate::handlers::auth::router as auth_router;
 async fn main() {
     dotenvy::dotenv().ok();
 
-    // 🔹 Inicializa logs com `tracing`
+    // ✅ Inicializa logs com `tracing`
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::DEBUG)
         .finish();
     tracing::subscriber::set_global_default(subscriber)
         .expect("Falha ao configurar logs");
 
-    // 🔹 Carrega as configurações
+    // ✅ Carrega configurações
     let config = Arc::new(config::Config::from_env().expect("Failed to load config"));
     let pool = db::init_db(&config);
 
     tracing::info!("📡 Conectado ao banco de dados");
 
-    // 🔹 Rotas abertas (sem autenticação) → RATE LIMIT + CORS
+    // ✅ Rotas abertas (sem autenticação) → RATE LIMIT + CORS
     let auth_routes = auth_router(pool.clone(), config.clone())
         .layer(from_fn(rate_limit_middleware))
         .layer(cors_middleware());
@@ -45,7 +45,7 @@ async fn main() {
     let open_routes = Router::new()
         .layer(cors_middleware());
 
-    // 🔹 Rotas protegidas (com autenticação) → RATE LIMIT + CORS
+    // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .layer(from_fn(auth_middleware))
