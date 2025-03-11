@@ -1,17 +1,20 @@
 use std::env;
 use dotenvy::dotenv;
 use tracing::error;
+use log4rs;
 
-/// 🔹 Estrutura para armazenar configurações do sistema.
 #[derive(Clone)]
 pub struct Config {
     pub database_url: String,
-    pub secret_key: String, // ✅ Adicionado secret_key
+    pub secret_key: String,
 }
 
 impl Config {
     pub fn from_env() -> Result<Self, String> {
-        dotenv().ok(); // ✅ Carrega variáveis de ambiente automaticamente
+        dotenv().ok();
+
+        // ✅ Carrega arquivo de configuração do log
+        log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
         let database_url = env::var("DATABASE_URL").map_err(|_| {
             error!("❌ DATABASE_URL must be set in the environment");
