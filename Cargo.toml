@@ -7,7 +7,7 @@ edition = "2021"
 # Axum e dependências relacionadas
 axum = { version = "0.7.5", features = ["macros", "http1", "http2"] }
 tower = { version = "0.4", features = ["util"] }
-tower-http = { version = "0.5", features = ["cors", "trace", "timeout", "limit", "add-extension"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "timeout", "limit"] } # 🔥 Removi "add-extension" (não existe nessa versão)
 hyper = { version = "1", features = ["full"] }
 
 # Serialização e desserialização
