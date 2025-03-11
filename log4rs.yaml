@@ -1,0 +1,30 @@
+# 🔹 Configuração de Log4rs para logs em arquivo + console
+appenders:
+  stdout:
+    kind: console
+  file:
+    kind: file
+    path: "logs/app.log"
+    encoder:
+      pattern: "{d} - {l} - {m}{n}"
+
+root:
+  level: info
+  appenders:
+    - stdout
+    - file
+
+loggers:
+  scheduling:
+    level: debug
+    appenders:
+      - stdout
+      - file
+    additive: false
+
+# 🔹 Define níveis diferentes para o SQL do Diesel
+  diesel::sql_query:
+    level: warn
+    appenders:
+      - file
+    additive: false

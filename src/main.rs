@@ -17,6 +17,7 @@ mod middleware;
 
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
+use crate::middleware::cors::cors_middleware;
 use crate::handlers::auth::router as auth_router;
 
 #[tokio::main]
@@ -36,17 +37,20 @@ async fn main() {
 
     tracing::info!("📡 Conectado ao banco de dados");
 
-    // 🔹 Rotas abertas (sem autenticação) → RATE LIMIT DE 5 REQ/S
+    // 🔹 Rotas abertas (sem autenticação) → RATE LIMIT + CORS
     let auth_routes = auth_router(pool.clone(), config.clone())
-        .layer(from_fn(rate_limit_middleware)); 
+        .layer(from_fn(rate_limit_middleware))
+        .layer(cors_middleware());
 
-    let open_routes = Router::new();
+    let open_routes = Router::new()
+        .layer(cors_middleware());
 
-    // 🔹 Rotas protegidas (com autenticação) → RATE LIMIT DE 5 REQ/S
+    // 🔹 Rotas protegidas (com autenticação) → RATE LIMIT + CORS
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .layer(from_fn(auth_middleware))
-        .layer(from_fn(rate_limit_middleware)); 
+        .layer(from_fn(rate_limit_middleware))
+        .layer(cors_middleware());
 
     let app = Router::new()
         .nest("/auth", auth_routes)
