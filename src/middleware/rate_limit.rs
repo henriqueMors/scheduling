@@ -1,13 +1,14 @@
 use axum::http::Request;
 use std::time::Duration;
 use tower_http::timeout::TimeoutLayer;
-use tower::{ServiceBuilder, Layer, BoxCloneService};
+use tower::{ServiceBuilder, Service};
+use tower::util::BoxCloneService;
 use hyper::Body;
 
 /// 🔹 Configura Rate Limiting para 5 requisições simultâneas por IP
 pub fn rate_limit_middleware<S>() -> BoxCloneService<Request<Body>, S::Response, S::Error>
 where
-    S: tower::Service<Request<Body>> + Clone + Send + 'static,
+    S: Service<Request<Body>> + Clone + Send + 'static,
     S::Response: Send + 'static,
     S::Future: Send + 'static,
 {
@@ -20,7 +21,7 @@ where
 /// 🔹 Configura Rate Limiting mais agressivo para endpoints críticos
 pub fn strict_rate_limit_middleware<S>() -> BoxCloneService<Request<Body>, S::Response, S::Error>
 where
-    S: tower::Service<Request<Body>> + Clone + Send + 'static,
+    S: Service<Request<Body>> + Clone + Send + 'static,
     S::Response: Send + 'static,
     S::Future: Send + 'static,
 {
