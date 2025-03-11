@@ -36,6 +36,18 @@ pub fn update_reservation(
         .get_result::<Reservation>(conn)
 }
 
+/// ✅ Lista reservas de um usuário específico
+pub fn list_reservations_by_user(
+    conn: &mut PgConnection,
+    user_id_param: Uuid,
+) -> Result<Vec<Reservation>, Error> {
+    reservations
+        .filter(user_id.eq(user_id_param))
+        .order(appointment_time.asc())
+        .load::<Reservation>(conn)
+}
+
+
 /// ✅ Deleta uma reserva.
 pub fn delete_reservation(conn: &mut PgConnection, reservation_id: Uuid) -> Result<usize, Error> {
     diesel::delete(reservations.filter(id.eq(reservation_id)))
