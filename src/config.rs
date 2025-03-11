@@ -13,7 +13,7 @@ impl Config {
     pub fn from_env() -> Result<Self, String> {
         dotenv().ok();
 
-        // ✅ Carrega arquivo de configuração do log
+        // ✅ Configuração de log com `log4rs`
         log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
         let database_url = env::var("DATABASE_URL").map_err(|_| {

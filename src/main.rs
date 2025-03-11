@@ -39,7 +39,7 @@ async fn main() {
 
     // ✅ Rotas abertas (sem autenticação) → RATE LIMIT + CORS
     let auth_routes = auth_router(pool.clone(), config.clone())
-        .layer(rate_limit_middleware()) // ✅ Adicionando camada de Rate Limit
+        .layer(from_fn(|| rate_limit_middleware()))
         .layer(cors_middleware());
 
     let open_routes = Router::new()
@@ -49,7 +49,7 @@ async fn main() {
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .layer(from_fn(auth_middleware))
-        .layer(rate_limit_middleware()) // ✅ Aplicando Rate Limit diretamente
+        .layer(from_fn(|| rate_limit_middleware()))
         .layer(cors_middleware());
 
     let app = Router::new()
