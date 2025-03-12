@@ -19,11 +19,12 @@ pub async fn create_reservation(
 
     // ✅ Criação correta da `NewReservation`
     let new_reservation = NewReservation {
-        user_id, // ✅ Agora usa `user_id` diretamente
-        service: payload.service.clone(), // ✅ Clona `String`
-        appointment_time: payload.appointment_time.clone(), // ✅ Clona `String`
-        status: "pending".to_string(),  // ✅ Status inicial como String
+        user_id,  // ✅ AGORA USANDO `user_id`
+        service: payload.service.clone(),
+        appointment_time: payload.appointment_time,
+        status: "pending".to_string(),
     };
+    
 
     // ✅ Insere a reserva no banco
     let reservation = diesel::insert_into(reservations::table)

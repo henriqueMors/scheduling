@@ -15,11 +15,12 @@ diesel::table! {
     reservations (id) {
         id -> Uuid,
         user_id -> Uuid,
-        service -> Text,
+        service -> Varchar,
         appointment_time -> Timestamp,
-        status -> Text,
+        status -> Varchar,
     }
 }
+
 
 // 🔹 Define o relacionamento entre `reservations` e `users`
 diesel::joinable!(reservations -> users (user_id));
