@@ -20,8 +20,6 @@ controle de acesso baseado em roles (admin, client).
 - **Criação, listagem e modificação de reservas**
 - **Controle de rate limiting e autenticação via middleware**
 - **Gestão de CORS**
-
-2. Configuração do Ambiente de Desenvolvimento
    
 ## Configuração do Ambiente
 
