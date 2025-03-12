@@ -46,7 +46,9 @@ async fn main() {
                 .layer(cors_middleware())
         );
 
+    // ✅ Rotas abertas (exemplo com `/health`)
     let open_routes = Router::new()
+        .route("/health", axum::routing::get(|| async { "Service is running!" })) // ✅ Adicionando rota `/health`
         .layer(cors_middleware());
 
     // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
