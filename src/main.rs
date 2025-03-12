@@ -4,6 +4,7 @@ use tokio::net::TcpListener;
 use std::net::SocketAddr;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
+use tower::ServiceBuilder;
 
 mod db;
 mod models;
@@ -39,8 +40,11 @@ async fn main() {
 
     // ✅ Rotas abertas (sem autenticação) → RATE LIMIT + CORS
     let auth_routes = auth_router(pool.clone(), config.clone())
-        .layer(rate_limit_middleware()) 
-        .layer(cors_middleware());
+        .layer(
+            ServiceBuilder::new()
+                .layer(rate_limit_middleware())
+                .layer(cors_middleware())
+        );
 
     let open_routes = Router::new()
         .layer(cors_middleware());
@@ -49,8 +53,11 @@ async fn main() {
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .layer(from_fn(auth_middleware))
-        .layer(strict_rate_limit_middleware()) 
-        .layer(cors_middleware());
+        .layer(
+            ServiceBuilder::new()
+                .layer(strict_rate_limit_middleware())
+                .layer(cors_middleware())
+        );
 
     let app = Router::new()
         .nest("/auth", auth_routes)

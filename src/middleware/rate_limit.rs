@@ -1,14 +1,13 @@
-use axum::http::{Request, Response};
 use axum::body::Body;
+use axum::http::{Request, Response, StatusCode};
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use tokio::sync::Semaphore;
-use tower::{Layer, Service, ServiceBuilder};
-use tower_http::timeout::TimeoutLayer;
-use std::time::Duration;
+use tower::{Layer, Service};
 use std::future::Future;
 use std::pin::Pin;
 
+/// 🔹 Middleware de Rate Limiting
 #[derive(Clone)]
 pub struct RateLimitMiddleware<S> {
     inner: S,
@@ -39,7 +38,7 @@ where
             }
             Err(_) => Box::pin(async {
                 let response = Response::builder()
-                    .status(429) // HTTP 429: Too Many Requests
+                    .status(StatusCode::TOO_MANY_REQUESTS) // HTTP 429: Too Many Requests
                     .body(Body::from("Too many requests"))
                     .unwrap();
                 Ok(response)
@@ -53,7 +52,11 @@ pub struct RateLimitLayer {
     semaphore: Arc<Semaphore>,
 }
 
-impl<S> Layer<S> for RateLimitLayer {
+impl<S> Layer<S> for RateLimitLayer
+where
+    S: Service<Request<Body>, Response = Response<Body>> + Clone + Send + 'static,
+    S::Future: Send + 'static,
+{
     type Service = RateLimitMiddleware<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
@@ -65,27 +68,15 @@ impl<S> Layer<S> for RateLimitLayer {
 }
 
 /// 🔹 Configura Rate Limiting para 5 requisições simultâneas por IP
-pub fn rate_limit_middleware<S>() -> impl Layer<S> + Clone + Send
-where
-    S: Service<Request<Body>, Response = Response<Body>> + Clone + Send + 'static,
-    S::Future: Send + 'static,
-{
-    ServiceBuilder::new()
-        .layer(TimeoutLayer::new(Duration::from_secs(1)))
-        .layer(RateLimitLayer {
-            semaphore: Arc::new(Semaphore::new(5)),
-        })
+pub fn rate_limit_middleware() -> RateLimitLayer {
+    RateLimitLayer {
+        semaphore: Arc::new(Semaphore::new(5)),
+    }
 }
 
 /// 🔹 Configura Rate Limiting mais agressivo para endpoints críticos
-pub fn strict_rate_limit_middleware<S>() -> impl Layer<S> + Clone + Send
-where
-    S: Service<Request<Body>, Response = Response<Body>> + Clone + Send + 'static,
-    S::Future: Send + 'static,
-{
-    ServiceBuilder::new()
-        .layer(TimeoutLayer::new(Duration::from_secs(1)))
-        .layer(RateLimitLayer {
-            semaphore: Arc::new(Semaphore::new(2)),
-        })
+pub fn strict_rate_limit_middleware() -> RateLimitLayer {
+    RateLimitLayer {
+        semaphore: Arc::new(Semaphore::new(2)),
+    }
 }
