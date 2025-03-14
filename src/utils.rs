@@ -3,6 +3,7 @@ use regex::Regex;
 
 /// 🔹 Regex compilada apenas uma vez → Melhor performance
 static PASSWORD_REGEX: Lazy<Regex> = Lazy::new(|| {
+    // A regex foi modificada para remover look-ahead/look-behind
     Regex::new(r"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$").unwrap()
 });
 
