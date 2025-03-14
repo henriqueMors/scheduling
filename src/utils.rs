@@ -13,13 +13,16 @@ static PASSWORD_REGEX: Lazy<Regex> = Lazy::new(|| {
 /// - Pelo menos 1 número  
 /// - Pelo menos 1 caractere especial (@, $, !, %, *, ?, &)  
 pub fn is_strong_password(password: &str) -> bool {
-    // Removendo look-ahead e implementando manualmente as verificações
+    // Verificar se a senha possui pelo menos uma letra minúscula
+    let has_lowercase = password.chars().any(|c| c.is_lowercase());
+    
     let has_uppercase = password.chars().any(|c| c.is_uppercase());
     let has_digit = password.chars().any(|c| c.is_digit(10));
     let has_special = password.chars().any(|c| r"@$!%*?&".contains(c));
     let min_length = password.len() >= 8;
 
-    has_uppercase && has_digit && has_special && min_length
+    // Senha deve ter uma letra minúscula, maiúscula, número, caractere especial e comprimento mínimo
+    has_lowercase && has_uppercase && has_digit && has_special && min_length
 }
 
 #[cfg(test)]
