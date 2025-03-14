@@ -1,5 +1,34 @@
 # Scheduling API
 
+src/
+├── config/                # Configurações globais (Ex: leitura de variáveis de ambiente)
+│   └── mod.rs
+├── db/                    # Lógica de conexão com banco de dados (Diesel)
+│   └── mod.rs
+├── handlers/              # Funções de manipulação de requisições (Handlers)
+│   ├── auth.rs            # Manipulação de autenticação (login, registro, etc.)
+│   ├── reservation.rs     # Manipulação das reservas (CRUD)
+│   └── user.rs            # Manipulação de usuários (CRUD)
+├── middleware/            # Middleware, como autenticação, rate limit, etc.
+│   ├── auth_middleware.rs # Verificação de JWT e roles
+│   ├── rate_limit.rs      # Controle de rate limit
+│   └── cors.rs            # Middleware de CORS
+├── models/                # Modelos de dados (estruturas usadas para comunicação com o DB)
+│   ├── user.rs            # Modelo de dados de usuários
+│   └── reservation.rs     # Modelo de dados de reservas
+├── routes/                # Definição de rotas
+│   └── mod.rs             # Definição das rotas principais
+├── schema/                # Esquema do banco de dados (gerado pelo Diesel)
+│   └── mod.rs
+├── services/              # Lógica de negócios, como validação, cálculos, etc.
+│   └── mod.rs
+├── utils/                 # Funções auxiliares
+│   └── mod.rs
+├── main.rs                # Ponto de entrada do aplicativo
+└── lib.rs                 # (Opcional) Definições de utilidades para uso em testes ou outras partes
+
+
+
 Este é um projeto de **API para agendamento de serviços** utilizando **Axum** (framework Rust) e 
 **Diesel** (ORM para banco de dados PostgreSQL). O sistema permite que os usuários se registrem, 
 façam login, criem reservas e gerenciem as suas. O sistema também implementa autenticação JWT e 
