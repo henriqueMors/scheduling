@@ -13,17 +13,24 @@ use crate::models::reservation::{Reservation, NewReservation, UpdateReservation}
 use crate::services::reservation_service;
 use crate::middleware::auth_middleware::{require_role};
 
-
 /// 🔹 Cria uma reserva.
 pub async fn create_reservation(
     Extension(pool): Extension<Pool>,
-    Extension(user_id): Extension<Uuid>, 
+    Extension(user_id): Extension<Uuid>,  // ✅ Obtém `user_id` autenticado via middleware
     Json(payload): Json<NewReservation>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(map_db_error)?;
 
     // Criação da reserva
-    reservation_service::create_reservation(&mut conn, payload)
+    let new_reservation = NewReservation {
+        user_id,  // ✅ AGORA USANDO `user_id`
+        service: payload.service.clone(),
+        appointment_time: payload.appointment_time,
+        status: "pending".to_string(),
+    };
+
+    // ✅ Chama a função de serviço para criar a reserva no banco
+    reservation_service::create_reservation(&mut conn, new_reservation)
         .map(Json)
         .map_err(map_internal_error)
 }
@@ -31,6 +38,8 @@ pub async fn create_reservation(
 /// 🔹 Busca uma reserva específica por ID.
 pub async fn get_reservation(
     Extension(pool): Extension<Pool>,
+    Extension(user_id): Extension<Uuid>,  // ✅ Obtém `user_id` autenticado via middleware
+    Extension(role): Extension<String>,   // ✅ Obtém o papel do usuário (role)
     Path(reservation_id): Path<Uuid>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(map_db_error)?;
@@ -38,28 +47,52 @@ pub async fn get_reservation(
     let reservation = reservation_service::get_reservation_by_id(&mut conn, reservation_id)
         .map_err(map_not_found_error)?;
 
+    // 🔒 Clients só podem acessar suas próprias reservas
+    if role == "client" && reservation.user_id != user_id {
+        return Err((StatusCode::FORBIDDEN, "You are not allowed to access this reservation.".to_string()));
+    }
+
     Ok(Json(reservation))
 }
 
 /// 🔹 Lista todas as reservas.
-pub async fn get_all_reservations(
+pub async fn get_reservations(
     Extension(pool): Extension<Pool>,
+    Extension(user_id): Extension<Uuid>,  // ✅ Obtém `user_id` autenticado via middleware
+    Extension(role): Extension<String>,   // ✅ Obtém o papel do usuário (role)
 ) -> Result<Json<Vec<Reservation>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(map_db_error)?;
 
-    let all_reservations = reservation_service::list_reservations(&mut conn)
-        .map_err(map_internal_error)?;
+    let reservations = if role == "client" {
+        // 🔒 Clients só podem ver suas próprias reservas
+        reservation_service::list_reservations_by_user(&mut conn, user_id)
+    } else {
+        // 🔒 Admins e Admin Masters podem ver tudo
+        reservation_service::list_reservations(&mut conn)
+    };
 
-    Ok(Json(all_reservations))
+    reservations
+        .map(Json)
+        .map_err(map_internal_error)
 }
 
 /// 🔹 Atualiza uma reserva existente.
 pub async fn update_reservation(
     Extension(pool): Extension<Pool>,
+    Extension(user_id): Extension<Uuid>,  // ✅ Obtém `user_id` autenticado via middleware
+    Extension(role): Extension<String>,   // ✅ Obtém o papel do usuário (role)
     Path(reservation_id): Path<Uuid>,
     Json(payload): Json<UpdateReservation>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(map_db_error)?;
+
+    let existing_reservation = reservation_service::get_reservation_by_id(&mut conn, reservation_id)
+        .map_err(map_not_found_error)?;
+
+    // 🔒 Clients só podem atualizar suas próprias reservas
+    if role == "client" && existing_reservation.user_id != user_id {
+        return Err((StatusCode::FORBIDDEN, "You are not allowed to update this reservation.".to_string()));
+    }
 
     reservation_service::update_reservation(&mut conn, reservation_id, payload)
         .map(Json)
@@ -69,9 +102,19 @@ pub async fn update_reservation(
 /// 🔹 Remove uma reserva por ID.
 pub async fn delete_reservation(
     Extension(pool): Extension<Pool>,
+    Extension(user_id): Extension<Uuid>,  // ✅ Obtém `user_id` autenticado via middleware
+    Extension(role): Extension<String>,   // ✅ Obtém o papel do usuário (role)
     Path(reservation_id): Path<Uuid>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(map_db_error)?;
+
+    let existing_reservation = reservation_service::get_reservation_by_id(&mut conn, reservation_id)
+        .map_err(map_not_found_error)?;
+
+    // 🔒 Clients só podem excluir suas próprias reservas
+    if role == "client" && existing_reservation.user_id != user_id {
+        return Err((StatusCode::FORBIDDEN, "You are not allowed to delete this reservation.".to_string()));
+    }
 
     match reservation_service::delete_reservation(&mut conn, reservation_id) {
         Ok(deleted) if deleted > 0 => Ok(Json(json!({"message": "Reservation deleted"}))),
@@ -103,14 +146,16 @@ pub fn router(pool: Pool) -> Router {
     Router::new()
         .route(
             "/",
-            get(get_all_reservations) // ✅ Rota para listar todas as reservas
-                .post(create_reservation),
+            get(get_reservations)    // Rota GET para listar as reservas
+                .post(create_reservation) // Rota POST para criar uma nova reserva
+                .layer(from_fn(|req, next| require_role("client".to_string(), req, next))), // Camada de autenticação para clientes
         )
         .route(
             "/:reservation_id",
-            get(get_reservation)
-                .put(update_reservation)
-                .delete(delete_reservation),
+            get(get_reservation)     // Rota GET para buscar uma reserva por ID
+                .put(update_reservation)  // Rota PUT para atualizar uma reserva existente
+                .delete(delete_reservation) // Rota DELETE para remover uma reserva
+                .layer(from_fn(|req, next| require_role("client".to_string(), req, next))), // Camada de autenticação para clientes
         )
-        .layer(Extension(pool))
+        .layer(Extension(pool)) // Compartilha o pool de conexões com o banco de dados
 }
