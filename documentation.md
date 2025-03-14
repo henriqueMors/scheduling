@@ -31,13 +31,13 @@ controle de acesso baseado em roles (admin, client).
 
 ### Passos para Configuração
 
-1. **Clonar o Repositório**:
+**Clonar o Repositório**:
 
 ```bash```
 git clone https://github.com/seu-usuario/scheduling.git
 cd scheduling
 
-Crie um arquivo .env na raiz do projeto com as seguintes variáveis
+Crie um arquivo .env na raiz do projeto com as seguintes variáveis:
 DATABASE_URL=postgres://username:password@localhost/scheduling
 JWT_SECRET_KEY=seu_secreto_aqui
 
@@ -51,3 +51,159 @@ cargo diesel migration run
 Rodar o Servidor (O servidor estará disponível em http://127.0.0.1:3000)
 cargo run --quiet
 
+Criar o Banco de Dado
+
+psql -U seu_usuario -d postgres
+CREATE DATABASE scheduling;
+
+Rodar as Migrações
+cargo diesel migration run
+
+Rodar o Servidor
+cargo run
+
+## Endpoints da API
+
+### 1. **POST /auth/register**
+- **Descrição**: Cadastra um novo usuário no sistema.
+- **Parâmetros**:
+  - `username`: Nome de usuário (String)
+  - `password`: Senha do usuário (String)
+- **Exemplo de Requisição**:
+  
+```json
+{
+  "username": "johndoe",
+  "password": "securepassword123"
+}
+
+Resposta:
+Status: 201 Created
+corpo:
+{
+  "id": "uuid-do-usuario",
+  "username": "johndoe"
+}
+
+POST /auth/login
+Descrição: Faz o login e retorna um token JWT.
+Parâmetros:
+username: Nome de usuário (String)
+password: Senha (String)
+Exemplo de Requisição:
+{
+  "username": "johndoe",
+  "password": "securepassword123"
+}
+Resposta:
+Status: 200 OK
+Corpo:
+{
+  "access_token": "jwt_token_aqui"
+}
+
+3. GET /health
+Descrição: Verifica se o serviço está em funcionamento.
+Resposta:
+Status: 200 OK
+Corpo:
+{
+  "message": "Service is running!"
+}
+
+. POST /reservations
+Descrição: Cria uma nova reserva.
+Parâmetros:
+service: Nome do serviço (String)
+appointment_time: Data e hora do agendamento (ISO 8601)
+Exemplo de Requisição:
+{
+  "service": "Consulta médica",
+  "appointment_time": "2023-12-01T10:00:00"
+}
+Resposta:
+Status: 201 Created
+Corpo:
+{
+  "id": "uuid-da-reserva",
+  "user_id": "uuid-do-usuario",
+  "service": "Consulta médica",
+  "appointment_time": "2023-12-01T10:00:00",
+  "status": "pending"
+}
+GET /reservations
+Descrição: Lista todas as reservas para o usuário autenticado.
+Parâmetros: Nenhum
+Resposta:
+Status: 200 OK
+Corpo:
+[
+  {
+    "id": "uuid-da-reserva",
+    "user_id": "uuid-do-usuario",
+    "service": "Consulta médica",
+    "appointment_time": "2023-12-01T10:00:00",
+    "status": "pending"
+  }
+]
+
+
+
+### 4. **Autenticação e Autorização**
+
+O sistema usa **JWT** para autenticação e o middleware é utilizado para validar tokens em rotas protegidas.
+
+```markdown
+## Autenticação
+
+As rotas protegidas utilizam **JWT** para autenticação. O token é gerado ao fazer login no sistema e deve ser enviado no cabeçalho `Authorization` com o prefixo `Bearer`.
+
+### Exemplo de Cabeçalho de Autenticação:
+
+```plaintext
+Authorization: Bearer seu_token_aqui
+
+Middleware de Autenticação
+O middleware de autenticação verifica se o token é válido e não expirou. Se o token for válido, ele permite o acesso à rota. Caso contrário, retorna um erro 401 (Unauthorized).
+
+
+### 5. **Estrutura do Banco de Dados**
+
+```markdown
+## Banco de Dados
+
+### Tabelas
+
+1. **users**: Contém os dados dos usuários (id, username, password_hash).
+2. **reservations**: Contém as reservas feitas pelos usuários (id, user_id, service, appointment_time, status).
+
+### Mapeamento Diesel
+
+A tabela `reservations` é mapeada para o modelo `Reservation`, onde o `user_id` faz referência à tabela `users` (com chave estrangeira).
+
+## Testes
+
+Os testes são realizados com `cargo test`. Para garantir que o sistema funciona corretamente, os seguintes testes foram implementados:
+
+1. **Testes de Endpoints**: Verificam se as respostas da API estão corretas.
+2. **Testes de Validação de JWT**: Verificam se o middleware de autenticação está funcionando corretamente.
+3. **Testes de Rate-Limiting**: Garantem que o middleware de rate-limiting está funcionando.
+
+### Rodando os Testes
+
+```bash
+cargo test
+
+
+
+### 7. **Próximos Passos**
+
+Liste as tarefas que precisam ser realizadas ainda, como adicionar novos endpoints, melhorar a segurança, etc.
+
+```markdown
+## Próximos Passos
+
+- Adicionar mais funcionalidades, como o gerenciamento de roles de usuários (admin, cliente).
+- Implementar mais testes automatizados.
+- Implementar logs mais detalhados para produção.
+- Melhorar a documentação da API com Swagger/OpenAPI.
