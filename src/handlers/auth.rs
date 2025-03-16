@@ -135,7 +135,7 @@ pub fn router(pool: Pool, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me).layer(middleware::from_fn(auth_middleware))) // ✅ Middleware antes de `/me`
+        .route("/me", get(me).layer(middleware::from_fn(auth_middleware)))
         .layer(Extension(pool))
         .layer(Extension(config))
 }

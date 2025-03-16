@@ -18,5 +18,5 @@ pub fn cors_middleware() -> CorsLayer {
             axum::http::header::AUTHORIZATION,
             axum::http::header::CONTENT_TYPE,
         ])
-        .max_age(Duration::from_secs(600)) // 🔥 Cache de 10 minutos para o preflight
+        .max_age(Duration::from_secs(600))
 }
