@@ -1,5 +1,3 @@
-// @generated automatically by Diesel CLI.
-
 diesel::table! {
     users (id) {
         id -> Uuid,
@@ -20,7 +18,6 @@ diesel::table! {
         status -> Varchar,
     }
 }
-
 
 // 🔹 Define o relacionamento entre `reservations` e `users`
 diesel::joinable!(reservations -> users (user_id));
