@@ -1,3 +1,34 @@
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
+    admins (id) {
+        id -> Uuid,
+        master_id -> Text,
+        name -> Text,
+        phone -> Text,
+        password_hash -> Text,
+    }
+}
+
+diesel::table! {
+    clients (id) {
+        id -> Uuid,
+        name -> Text,
+        phone -> Text,
+        email -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    reservations (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        service -> Text,
+        appointment_time -> Timestamp,
+        status -> Text,
+    }
+}
+
 diesel::table! {
     users (id) {
         id -> Uuid,
@@ -9,21 +40,9 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    reservations (id) {
-        id -> Uuid,
-        user_id -> Uuid,
-        service -> Varchar,
-        appointment_time -> Timestamp,
-        status -> Varchar,
-    }
-}
-
-// 🔹 Define o relacionamento entre `reservations` e `users`
-diesel::joinable!(reservations -> users (user_id));
-
-// 🔹 Permite consultas combinadas entre `reservations` e `users`
 diesel::allow_tables_to_appear_in_same_query!(
+    admins,
+    clients,
     reservations,
     users,
 );
