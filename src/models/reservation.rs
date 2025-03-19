@@ -9,8 +9,8 @@ use crate::schema::reservations;
 #[diesel(table_name = reservations)]
 #[diesel(check_for_backend(Pg))]
 pub struct Reservation {
-    pub id: Uuid,  // 🔹 Alterado para `Uuid`
-    pub user_id: Uuid,  // 🔥 Substituído `client_id` por `user_id`
+    pub id: Uuid, 
+    pub user_id: Uuid,
     pub service: String,
     pub appointment_time: NaiveDateTime,
     pub status: String,
@@ -19,7 +19,7 @@ pub struct Reservation {
 #[derive(Debug, Insertable, Deserialize)]
 #[diesel(table_name = reservations)]
 pub struct NewReservation {
-    pub user_id: Uuid,  // 🔥 Substituído `client_id` por `user_id`
+    pub user_id: Uuid,
     pub service: String,
     pub appointment_time: NaiveDateTime,
     pub status: String,
