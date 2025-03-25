@@ -103,7 +103,7 @@ pub async fn login_user(
 #[axum::debug_handler]
 pub async fn me(
     Extension(pool): Extension<Pool>,
-    Extension(claims): Extension<Claims>, // ✅ Middleware agora garante que `Claims` está presente
+    Extension(claims): Extension<Claims>,
 ) -> Result<Json<User>, (StatusCode, String)> {
     let user_id = claims.sub.parse::<Uuid>()
         .map_err(|_| {
