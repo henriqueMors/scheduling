@@ -73,16 +73,39 @@ pub async fn auth_middleware(
             StatusCode::BAD_REQUEST
         })?;
 
-    // ✅ Injeta o `user_id`, `role` e `Claims` completos na requisição
-    req.extensions_mut().insert(user_id);
-    req.extensions_mut().insert(claims.clone()); // Aqui inserimos os Claims completos
-    req.extensions_mut().insert(claims.role.clone()); // E o role também, caso necessário
+    // ✅ Injeta user_id, claims e role na requisição
+    req.extensions_mut().insert(user_id); // Uuid
+    req.extensions_mut().insert(claims.clone()); // Claims
+    req.extensions_mut().insert(claims.role.clone()); // String: role
 
     info!(
         "✅ Acesso autorizado para usuário com ID: {} (Role: {})",
         user_id, claims.role
     );
 
-    // 🔹 Passa a requisição adiante
     Ok(next.run(req).await)
+}
+
+/// 🔒 Middleware para validar papel do usuário
+pub async fn require_role(
+    required_role: String,
+    mut req: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let role = req.extensions().get::<String>().cloned();
+
+    match role {
+        Some(user_role) if user_role == required_role || user_role == "admin_master" => {
+            info!("✅ Acesso autorizado para role: {}", user_role);
+            Ok(next.run(req).await)
+        }
+        Some(user_role) => {
+            error!("❌ Acesso negado para role: {}", user_role);
+            Err(StatusCode::FORBIDDEN)
+        }
+        None => {
+            error!("❌ Role não encontrado.");
+            Err(StatusCode::UNAUTHORIZED)
+        }
+    }
 }
