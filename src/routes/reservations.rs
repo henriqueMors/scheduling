@@ -9,6 +9,7 @@ use uuid::Uuid;
 use serde_json::json;
 use diesel::prelude::*;
 use crate::db::Pool;
+use crate::middleware::auth_middleware::require_role;
 use crate::models::reservation::{Reservation, NewReservation, UpdateReservation};
 use crate::services::reservation_service;
 
