@@ -16,7 +16,7 @@ mod config;
 mod utils;
 mod middleware;
 
-use crate::routes::{professionals, users}; // ✅ Agora também importa `users`
+use crate::routes::{professionals, users, services}; // ✅ Agora também importa `services`
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::middleware::cors::cors_middleware;
@@ -56,7 +56,8 @@ async fn main() {
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
         .nest("/professionals", professionals::router(pool.clone(), config.clone()))
-        .nest("/users", users::router(pool.clone(), config.clone())) // ✅ Novo módulo incluído
+        .nest("/users", users::router(pool.clone(), config.clone())) // ✅ Módulo de usuários incluído
+        .nest("/services", services::router(pool.clone(), config.clone())) // ✅ Módulo de serviços incluído
         .layer(from_fn(auth_middleware))
         .layer(
             ServiceBuilder::new()
