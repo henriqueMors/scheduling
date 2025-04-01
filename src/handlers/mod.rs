@@ -3,3 +3,4 @@ pub mod calendar;
 pub mod reservations_handler;
 pub mod professional;
 pub mod user;
+pub mod service;
