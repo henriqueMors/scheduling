@@ -16,6 +16,7 @@ mod config;
 mod utils;
 mod middleware;
 
+use crate::routes::professionals;
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::middleware::cors::cors_middleware;
@@ -48,12 +49,13 @@ async fn main() {
 
     // ✅ Rotas abertas (exemplo com `/health`)
     let open_routes = Router::new()
-        .route("/health", axum::routing::get(|| async { "Service is running!" })) // ✅ Adicionando rota `/health`
+        .route("/health", axum::routing::get(|| async { "Service is running!" }))
         .layer(cors_middleware());
 
     // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
+        .nest("/professionals", professionals::router(pool.clone(), config.clone())) // ✅ Agora incluso corretamente
         .layer(from_fn(auth_middleware))
         .layer(
             ServiceBuilder::new()
@@ -61,6 +63,7 @@ async fn main() {
                 .layer(cors_middleware())
         );
 
+    // ✅ Aplicação unificada
     let app = Router::new()
         .nest("/auth", auth_routes)
         .merge(open_routes)
