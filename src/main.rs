@@ -16,7 +16,7 @@ mod config;
 mod utils;
 mod middleware;
 
-use crate::routes::{professionals, users, services, availabilities, appointments}; // ✅ Agora também importa `appointments`
+use crate::routes::{professionals, users, services, availabilities, appointments, salon_settings}; // ✅ Agora também importa `salon_settings`
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::middleware::cors::cors_middleware;
@@ -60,6 +60,7 @@ async fn main() {
         .nest("/services", services::router(pool.clone(), config.clone())) // ✅ Módulo de serviços incluído
         .nest("/availabilities", availabilities::router(pool.clone(), config.clone())) // ✅ Módulo de horários incluído
         .nest("/appointments", appointments::router(pool.clone(), config.clone())) // ✅ Módulo de agendamentos incluído
+        .nest("/salon-settings", salon_settings::router(pool.clone(), config.clone())) // ✅ Módulo de configurações do salão incluído
         .layer(from_fn(auth_middleware))
         .layer(
             ServiceBuilder::new()
