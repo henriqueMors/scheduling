@@ -11,7 +11,7 @@ use crate::{
 
 /// 🔹 Cria uma nova configuração para o salão
 pub async fn create_salon_setting(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Agora recebendo Arc<Pool>
     Json(payload): Json<NewSalonSetting>,
 ) -> Result<Json<SalonSetting>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -26,7 +26,7 @@ pub async fn create_salon_setting(
 
 /// 🔹 Lista a configuração atual do salão
 pub async fn get_salon_setting(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Agora recebendo Arc<Pool>
 ) -> Result<Json<SalonSetting>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -39,7 +39,7 @@ pub async fn get_salon_setting(
 
 /// 🔹 Atualiza a configuração do salão
 pub async fn update_salon_setting(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Agora recebendo Arc<Pool>
     Path(id): Path<Uuid>,
     Json(update): Json<UpdateSalonSetting>,
 ) -> Result<Json<SalonSetting>, (StatusCode, String)> {

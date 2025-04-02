@@ -1,6 +1,7 @@
 use diesel::{Queryable, Insertable, Identifiable, AsChangeset};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use chrono::{NaiveDateTime};
 use crate::schema::salon_settings;
 
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]
@@ -10,7 +11,7 @@ pub struct SalonSetting {
     pub opening_hour: String,  // Ex: "08:00"
     pub closing_hour: String,  // Ex: "18:00"
     pub working_days: Vec<String>, // Ex: ["monday", "tuesday", "wednesday"]
-    pub created_at: String, // Ex: "2025-03-30 08:00:00"
+    pub created_at: NaiveDateTime, // Usando NaiveDateTime em vez de String
 }
 
 #[derive(Debug, Insertable, Deserialize)]
@@ -18,7 +19,7 @@ pub struct SalonSetting {
 pub struct NewSalonSetting {
     pub opening_hour: String,
     pub closing_hour: String,
-    pub working_days: Vec<String>,
+    pub working_days: Vec<String>, // Ex: ["monday", "tuesday", "wednesday"]
 }
 
 #[derive(Debug, AsChangeset, Deserialize)]
@@ -26,5 +27,5 @@ pub struct NewSalonSetting {
 pub struct UpdateSalonSetting {
     pub opening_hour: Option<String>,
     pub closing_hour: Option<String>,
-    pub working_days: Option<Vec<String>>,
+    pub working_days: Option<Vec<String>>, // Optional para o update
 }
