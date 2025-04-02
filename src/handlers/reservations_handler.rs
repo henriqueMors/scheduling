@@ -57,4 +57,28 @@ pub async fn get_reservation(
         .map_err(|e| {
             error!("❌ Erro ao buscar reserva: {:?}", e);
             (StatusCode::NOT_FOUND, "Reserva não encontrada".to_string())
-        })
+        })?;
+
+    Ok(Json(reservation)) // Retorna a reserva encontrada
+}
+
+#[axum::debug_handler]
+pub async fn get_all_reservations(
+    Extension(pool): Extension<Arc<Pool>>, // Passando Arc<Pool>
+) -> Result<Json<Vec<Reservation>>, (StatusCode, String)> {
+    // Obtem a conexão do pool
+    let mut conn = pool.get().map_err(|e| {
+        error!("❌ Erro ao obter conexão com o banco de dados: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
+
+    // Obtém todas as reservas
+    let all_reservations = reservations::table
+        .load::<Reservation>(&mut conn)
+        .map_err(|e| {
+            error!("❌ Erro ao buscar reservas: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    Ok(Json(all_reservations)) // Retorna todas as reservas encontradas
+}
