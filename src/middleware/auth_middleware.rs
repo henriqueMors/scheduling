@@ -22,9 +22,9 @@ pub struct Claims {
 
 /// 🔐 Middleware de autenticação JWT
 pub async fn auth_middleware(
-    Extension(config): Extension<Arc<Config>>,
-    mut req: Request,
-    next: Next,
+    Extension(config): Extension<Arc<Config>>, // `config` é passado via Extension
+    mut req: Request<axum::body::Body>, // Tipo correto do Request
+    next: Next<axum::body::Body>, // O tipo de Next também precisa ser especificado
 ) -> Result<Response, StatusCode> {
     let headers = req.headers();
 
@@ -46,7 +46,7 @@ pub async fn auth_middleware(
     info!("🔑 Token recebido: {}", token);
 
     // 🔹 Decodifica o JWT
-    let key = DecodingKey::from_secret(config.secret_key.as_bytes());
+    let key = DecodingKey::from_secret(config.secret_key.as_bytes()); // Certifique-se de que a chave é interpretada corretamente como bytes
     let decoded = decode::<Claims>(&token, &key, &Validation::default());
 
     let claims = match decoded {
@@ -89,8 +89,8 @@ pub async fn auth_middleware(
 /// 🔒 Middleware para validar papel do usuário
 pub async fn require_role(
     required_role: String,
-    mut req: Request,
-    next: Next,
+    mut req: Request<axum::body::Body>, // Tipo de Request também deve ser consistente aqui
+    next: Next<axum::body::Body>, // Tipo de Next
 ) -> Result<Response, StatusCode> {
     let role = req.extensions().get::<String>().cloned();
 
