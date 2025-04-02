@@ -60,6 +60,17 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    appointments (id) {
+        id -> Uuid,
+        client_id -> Uuid,           // Garantir que `client_id` seja do tipo `Uuid`
+        professional_id -> Uuid,
+        service_id -> Uuid,
+        appointment_time -> Timestamp,
+        status -> Text,
+    }
+}
+
 diesel::joinable!(professionals -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(

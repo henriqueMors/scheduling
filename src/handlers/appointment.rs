@@ -1,10 +1,17 @@
-use axum::{extract::{Extension, Json, Path}, http::StatusCode};
+use axum::{
+    extract::{Extension, Json, Path},
+    http::StatusCode,
+    routing::{post, get, put, delete},
+    Router,
+};
 use diesel::prelude::*;
 use std::sync::Arc;
 use uuid::Uuid;
+use chrono::NaiveDateTime;
+
 use crate::{
     db::Pool,
-    models::appointment::{Appointment},
+    models::appointment::{Appointment, NewAppointment, UpdateAppointment},
     schema::appointments::dsl::*,
 };
 
@@ -23,16 +30,17 @@ pub async fn create_appointment(
     Ok(Json(new_appointment))
 }
 
+
 /// 🔹 Lista todos os agendamentos de um cliente
 pub async fn list_appointments_by_client(
     Extension(pool): Extension<Pool>,
-    Path(client_id): Path<Uuid>,  // Extraindo o `client_id` como um `Uuid`
+    Path(client_id): Path<Uuid>,  // Extraindo o client_id da URL como `Uuid`
 ) -> Result<Json<Vec<Appointment>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Certifique-se de que `client_id` é um `Uuid` e está sendo usado corretamente
+    // Agora com a definição correta do tipo `client_id` no schema
     let appointments_list = appointments
-        .filter(appointments::client_id.eq(client_id))  // Usando `appointments::client_id` para a comparação
+        .filter(client_id.eq(client_id))  // Usando `client_id` extraído corretamente da URL
         .load::<Appointment>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
