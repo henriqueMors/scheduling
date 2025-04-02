@@ -61,6 +61,7 @@ diesel::table! {
     }
 }
 
+
 diesel::table! {
     professionals (id) {
         id -> Uuid,
