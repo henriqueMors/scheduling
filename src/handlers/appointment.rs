@@ -13,83 +13,65 @@ use crate::{
     db::Pool,
     models::appointment::{Appointment, NewAppointment, UpdateAppointment},
     schema::appointments::dsl::*,
+    schema::appointments,
 };
 
-/// 🔹 Creates a new appointment
+/// 🔹 Cria um novo agendamento
 pub async fn create_appointment(
-    Extension(pool): Extension<Arc<Pool>>,  // Using Arc for thread safety
+    Extension(pool): Extension<Pool>,
     Json(payload): Json<NewAppointment>,
 ) -> Result<Json<Appointment>, (StatusCode, String)> {
-    let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database connection error: {}", e)))?;
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let new_appointment = diesel::insert_into(appointments)
         .values(&payload)
         .get_result::<Appointment>(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Insert error: {}", e)))?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(new_appointment))
 }
 
-/// 🔹 Lists all appointments for a client
+/// 🔹 Lista todos os agendamentos de um cliente
 pub async fn list_appointments_by_client(
-    Extension(pool): Extension<Arc<Pool>>,
-    Path(client_uuid): Path<Uuid>,  // Renamed to avoid confusion with column name
+    Extension(pool): Extension<Pool>,
+    Path(client_id): Path<Uuid>,
 ) -> Result<Json<Vec<Appointment>>, (StatusCode, String)> {
-    let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database connection error: {}", e)))?;
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let appointments_list = appointments
-        .filter(client_id.eq(client_uuid))  // Clear distinction between column and variable
+        .filter(client_id.eq(client_id))
         .load::<Appointment>(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Query error: {}", e)))?;
-
-    if appointments_list.is_empty() {
-        return Err((StatusCode::NOT_FOUND, "No appointments found for this client".into()));
-    }
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(appointments_list))
 }
 
-/// 🔹 Updates an appointment status
+/// 🔹 Atualiza o status de um agendamento
 pub async fn update_appointment(
-    Extension(pool): Extension<Arc<Pool>>,
+    Extension(pool): Extension<Pool>,
     Path(appointment_id): Path<Uuid>,
     Json(update): Json<UpdateAppointment>,
 ) -> Result<Json<Appointment>, (StatusCode, String)> {
-    let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database connection error: {}", e)))?;
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let updated_appointment = diesel::update(appointments)
-        .filter(id.eq(appointment_id))
+    let updated_appointment = diesel::update(appointments.filter(id.eq(appointment_id)))
         .set(update)
         .get_result::<Appointment>(&mut conn)
-        .map_err(|e| match e {
-            diesel::result::Error::NotFound => 
-                (StatusCode::NOT_FOUND, "Appointment not found".into()),
-            _ => 
-                (StatusCode::INTERNAL_SERVER_ERROR, format!("Update error: {}", e)),
-        })?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(updated_appointment))
 }
 
-/// 🔹 Deletes an appointment
+/// 🔹 Deleta um agendamento
 pub async fn delete_appointment(
-    Extension(pool): Extension<Arc<Pool>>,
+    Extension(pool): Extension<Pool>,
     Path(appointment_id): Path<Uuid>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let mut conn = pool.get()
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database connection error: {}", e)))?;
+    let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let rows_affected = diesel::delete(appointments)
-        .filter(id.eq(appointment_id))
+    diesel::delete(appointments.filter(id.eq(appointment_id)))
         .execute(&mut conn)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Delete error: {}", e)))?;
-
-    if rows_affected == 0 {
-        return Err((StatusCode::NOT_FOUND, "Appointment not found".into()));
-    }
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(StatusCode::NO_CONTENT)
 }
