@@ -11,6 +11,26 @@ diesel::table! {
 }
 
 diesel::table! {
+    appointments (id) {
+        id -> Uuid,
+        client_id -> Uuid,
+        professional_id -> Uuid,
+        service_id -> Uuid,
+        appointment_time -> Timestamp,
+        status -> Text,
+    }
+}
+
+diesel::table! {
+    availabilities (id) {
+        id -> Uuid,
+        professional_id -> Uuid,
+        available_time -> Timestamp,
+        status -> Text,
+    }
+}
+
+diesel::table! {
     clients (id) {
         id -> Uuid,
         name -> Text,
@@ -50,6 +70,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    services (id) {
+        id -> Uuid,
+        name -> Text,
+        description -> Nullable<Text>,
+        price -> Numeric,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Uuid,
         name -> Text,
@@ -60,24 +89,20 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    appointments (id) {
-        id -> Uuid,
-        client_id -> Uuid,           // Garantir que `client_id` seja do tipo `Uuid`
-        professional_id -> Uuid,
-        service_id -> Uuid,
-        appointment_time -> Timestamp,
-        status -> Text,
-    }
-}
-
+diesel::joinable!(appointments -> clients (client_id));
+diesel::joinable!(appointments -> professionals (professional_id));
+diesel::joinable!(appointments -> services (service_id));
+diesel::joinable!(availabilities -> professionals (professional_id));
 diesel::joinable!(professionals -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     admins,
+    appointments,
+    availabilities,
     clients,
     professionals,
     reservations,
     salon_settings,
+    services,
     users,
 );
