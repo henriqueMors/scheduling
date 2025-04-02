@@ -1,6 +1,5 @@
 use axum::{
     Router,
-    middleware::from_fn,
     routing::{get, put, delete, patch},
     Extension,
 };
@@ -19,12 +18,12 @@ use crate::{
     },
 };
 
-pub fn router(pool: Pool, config: Arc<Config>) -> Router {
+pub fn router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
     Router::new()
         .route("/", get(list_users))
         .route("/:id", get(get_user_by_id).put(update_user).delete(delete_user))
         .route("/:id/role", patch(update_user_role))
-        .layer(Extension(pool))
-        .layer(Extension(config))
-        .layer(from_fn(auth_middleware))
+        .layer(Extension(pool)) // Passando o pool de conexões
+        .layer(Extension(config)) // Passando as configurações
+        .layer(auth_middleware) // Aplicando o middleware de autenticação diretamente
 }
