@@ -5,6 +5,8 @@ use std::net::SocketAddr;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use tower::ServiceBuilder;
+use diesel::r2d2::{Pool, ConnectionManager};
+use diesel::PgConnection;
 
 mod db;
 mod models;
@@ -21,7 +23,7 @@ use crate::routes::services as service_routes;
 use crate::middleware::auth_middleware::auth_middleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::middleware::cors::cors_middleware;
-use crate::handlers::auth::router as auth_router;
+use crate::handlers::auth::auth_router;
 
 #[tokio::main]
 async fn main() {
