@@ -13,7 +13,6 @@ use crate::{
     db::Pool,
     models::appointment::{Appointment, NewAppointment, UpdateAppointment},
     schema::appointments::dsl::*,
-    schema::appointments,
 };
 
 /// 🔹 Cria um novo agendamento
@@ -34,12 +33,13 @@ pub async fn create_appointment(
 /// 🔹 Lista todos os agendamentos de um cliente
 pub async fn list_appointments_by_client(
     Extension(pool): Extension<Pool>,
-    Path(client_id): Path<Uuid>,
+    Path(client_id): Path<Uuid>,  // Extraindo o client_id como um Uuid
 ) -> Result<Json<Vec<Appointment>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Verifique se `client_id` é um Uuid válido
     let appointments_list = appointments
-        .filter(client_id.eq(client_id))
+        .filter(appointments::client_id.eq(client_id))  // Usando `appointments::client_id` para a comparação
         .load::<Appointment>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
