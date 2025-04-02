@@ -38,8 +38,10 @@ async fn main() {
 
     // ✅ Carrega configurações
     let config = Arc::new(config::Config::from_env().expect("Failed to load config"));
+    
+    // Inicializando o pool de conexões
     let pool = db::init_db(&config);
-
+    
     tracing::info!("📡 Conectado ao banco de dados");
 
     // ✅ Rotas abertas (sem autenticação) → RATE LIMIT + CORS
@@ -76,7 +78,7 @@ async fn main() {
         .nest("/auth", auth_routes)
         .merge(open_routes)
         .merge(protected_routes)
-        .layer(Extension(pool))
+        .layer(Extension(pool))  // Passando o pool de conexões
         .layer(Extension(config));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
