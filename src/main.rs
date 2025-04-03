@@ -73,7 +73,6 @@ async fn main() {
                 .layer(cors_middleware())
         );
 
-        
     // ✅ Aplicação unificada
     let app = Router::new()
         .nest("/auth", auth_routes)
