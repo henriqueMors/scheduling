@@ -72,7 +72,7 @@ pub async fn login_user(
 
     info!("Tentativa de login: {}", payload.phone);
 
-    // Corrigido: usando o DSL e select explícito
+    // Ajuste: utilizando `first` e limitando a consulta a um único resultado
     let user = users
         .filter(phone.eq(&payload.phone))
         .limit(1)  // Limitando a consulta a apenas um resultado
@@ -120,7 +120,7 @@ pub async fn me(
             (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
         })?;
 
-    // Corrigido: usando select explícito
+    // Ajuste: utilizando `first` e limitando a consulta a um único resultado
     let user = users
         .filter(id.eq(user_id))
         .limit(1)  // Limitando a consulta a apenas um resultado

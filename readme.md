@@ -1,4 +1,4 @@
-Oi, Rust! Eu estou trabalhando em um projeto de agendamento de serviços usando Axum, Diesel e PostgreSQL. A aplicação inclui várias funcionalidades como autenticação, gerenciamento de usuários, criação e gestão de agendamentos, serviços e profissionais. Os dados são gerenciados via Diesel ORM, e a aplicação segue uma estrutura RESTful com autenticação baseada em tokens JWT.
+Oi! Eu estou trabalhando em um projeto de agendamento de serviços usando Axum, Diesel e PostgreSQL. A aplicação inclui várias funcionalidades como autenticação, gerenciamento de usuários, criação e gestão de agendamentos, serviços e profissionais. Os dados são gerenciados via Diesel ORM, e a aplicação segue uma estrutura RESTful com autenticação baseada em tokens JWT.
 
 Eu gostaria de discutir detalhes técnicos do código e de eventuais melhorias ou correções, com foco em rotas, modelos e a estrutura do banco de dados. O que você pode me ajudar a otimizar ou corrigir, com base nas melhores práticas?
 
