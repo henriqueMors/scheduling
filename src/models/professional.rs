@@ -4,28 +4,31 @@ use uuid::Uuid;
 use chrono::NaiveDateTime;
 use crate::schema::professionals;
 
+/// 🔹 Estrutura para representar um profissional (para consultas no banco de dados)
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable, Associations, Selectable)]
 #[diesel(table_name = professionals)]
-#[diesel(belongs_to(User))]
+#[diesel(belongs_to(User))]  // Relacionamento entre Professional e User
 pub struct Professional {
-    pub id: Uuid,
-    pub user_id: Uuid,
-    pub bio: Option<String>,
-    pub specialties: Vec<String>,
-    pub created_at: NaiveDateTime,
+    pub id: Uuid,                // ID do profissional
+    pub user_id: Uuid,           // ID do usuário (associado a um User)
+    pub bio: Option<String>,     // Biografia (opcional)
+    pub specialties: Vec<String>,// Especialidades (como uma lista de strings)
+    pub created_at: NaiveDateTime, // Data de criação (data e hora)
 }
 
+/// 🔹 Estrutura para criar um novo profissional (para inserção no banco)
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = professionals)]
 pub struct NewProfessional {
-    pub user_id: Uuid,
-    pub bio: Option<String>,
-    pub specialties: Vec<String>,
+    pub user_id: Uuid,           // ID do usuário associado ao profissional
+    pub bio: Option<String>,     // Biografia (opcional)
+    pub specialties: Vec<String>,// Especialidades (como uma lista de strings)
 }
 
+/// 🔹 Estrutura para atualizar os dados de um profissional (para alteração no banco)
 #[derive(Debug, AsChangeset, Deserialize)]
 #[diesel(table_name = professionals)]
 pub struct UpdateProfessional {
-    pub bio: Option<String>,
-    pub specialties: Option<Vec<String>>,
+    pub bio: Option<String>,     // Biografia (opcional)
+    pub specialties: Option<Vec<String>>, // Especialidades (opcional)
 }
