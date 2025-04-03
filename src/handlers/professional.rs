@@ -21,6 +21,7 @@ pub async fn create_professional(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<NewProfessional>,
 ) -> Result<Json<Professional>, (StatusCode, String)> {
+    // Somente administradores ou administradores master podem criar um profissional
     if claims.role != "admin" && claims.role != "admin_master" {
         return Err((StatusCode::FORBIDDEN, "Access denied".to_string()));
     }

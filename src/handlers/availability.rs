@@ -38,7 +38,7 @@ pub async fn list_availabilities_by_professional(
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let availabilities = availabilities
-        .filter(professional_id.eq(professional_id))
+        .filter(professional_id.eq(professional_id)) // Certifique-se de que 'professional_id' seja uma coluna válida
         .load::<Availability>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 

@@ -17,7 +17,7 @@ use crate::{
 
 /// 🔹 Lista todos os usuários (apenas admin)
 pub async fn list_users(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Corrigido para usar Arc<Pool>
     Extension(claims): Extension<Claims>,
 ) -> Result<Json<Vec<User>>, (StatusCode, String)> {
     if claims.role != "admin" && claims.role != "admin_master" {
@@ -32,7 +32,7 @@ pub async fn list_users(
 
 /// 🔹 Busca usuário por ID (autorizado ou admin)
 pub async fn get_user_by_id(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Corrigido para usar Arc<Pool>
     Extension(claims): Extension<Claims>,
     Path(target_id): Path<Uuid>,
 ) -> Result<Json<User>, (StatusCode, String)> {
@@ -51,7 +51,7 @@ pub async fn get_user_by_id(
 
 /// 🔹 Atualiza dados do usuário (self ou admin)
 pub async fn update_user(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Corrigido para usar Arc<Pool>
     Extension(claims): Extension<Claims>,
     Path(target_id): Path<Uuid>,
     Json(update): Json<UpdateUser>,
@@ -72,7 +72,7 @@ pub async fn update_user(
 
 /// 🔹 Deleta um usuário (self ou admin)
 pub async fn delete_user(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Corrigido para usar Arc<Pool>
     Extension(claims): Extension<Claims>,
     Path(target_id): Path<Uuid>,
 ) -> Result<StatusCode, (StatusCode, String)> {
@@ -96,7 +96,7 @@ pub struct RoleUpdate {
 }
 
 pub async fn update_user_role(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Corrigido para usar Arc<Pool>
     Extension(claims): Extension<Claims>,
     Path(target_id): Path<Uuid>,
     Json(body): Json<RoleUpdate>,

@@ -8,6 +8,7 @@ use crate::db::Pool;
 use crate::models::reservation::{Reservation, NewReservation};
 use crate::schema::reservations;
 use crate::services::reservation_service;
+use tracing::error;
 
 #[axum::debug_handler]
 pub async fn create_reservation(

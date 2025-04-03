@@ -18,7 +18,7 @@ use crate::{
 
 /// 🔹 Cria um novo agendamento
 pub async fn create_appointment(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Alteração para usar Arc<Pool>
     Json(payload): Json<NewAppointment>,
 ) -> Result<Json<Appointment>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -33,7 +33,7 @@ pub async fn create_appointment(
 
 /// 🔹 Lista todos os agendamentos de um cliente
 pub async fn list_appointments_by_client(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Alteração para usar Arc<Pool>
     Path(client_id): Path<Uuid>,
 ) -> Result<Json<Vec<Appointment>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -48,7 +48,7 @@ pub async fn list_appointments_by_client(
 
 /// 🔹 Atualiza o status de um agendamento
 pub async fn update_appointment(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Alteração para usar Arc<Pool>
     Path(appointment_id): Path<Uuid>,
     Json(update): Json<UpdateAppointment>,
 ) -> Result<Json<Appointment>, (StatusCode, String)> {
@@ -64,7 +64,7 @@ pub async fn update_appointment(
 
 /// 🔹 Deleta um agendamento
 pub async fn delete_appointment(
-    Extension(pool): Extension<Pool>,
+    Extension(pool): Extension<Arc<Pool>>,  // Alteração para usar Arc<Pool>
     Path(appointment_id): Path<Uuid>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
