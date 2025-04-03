@@ -8,7 +8,7 @@ use std::sync::Arc;
 use crate::{
     db::Pool,
     config::Config,
-    middleware::auth_middleware::auth_middleware,
+    middleware::auth_middleware::{auth_middleware, Claims},
     handlers::user::{
         list_users,
         get_user_by_id,
