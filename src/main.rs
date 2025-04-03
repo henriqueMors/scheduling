@@ -60,12 +60,12 @@ async fn main() {
     // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
     let protected_routes = Router::new()
         .nest("/reservations", routes::reservations::router(pool.clone()))
-        .nest("/professionals", professionals::router(pool.clone(), config.clone()))
-        .nest("/users", users::router(pool.clone(), config.clone())) // ✅ Módulo de usuários incluído
-        .nest("/services", service_routes::router(pool.clone(), config.clone())) // ✅ Módulo de serviços incluído
-        .nest("/availabilities", availabilities::router(pool.clone(), config.clone())) // ✅ Módulo de horários incluído
-        .nest("/appointments", appointments::router(pool.clone(), config.clone())) // ✅ Módulo de agendamentos incluído
-        .nest("/salon-settings", salon_settings::router(pool.clone(), config.clone())) // ✅ Módulo de configurações do salão incluído
+        .nest("/professionals", professionals::router(pool, config.clone()))
+        .nest("/users", users::router(pool, config.clone())) // ✅ Módulo de usuários incluído
+        .nest("/services", service_routes::router(pool, config.clone())) // ✅ Módulo de serviços incluído
+        .nest("/availabilities", availabilities::router(pool, config.clone())) // ✅ Módulo de horários incluído
+        .nest("/appointments", appointments::router(pool, config.clone())) // ✅ Módulo de agendamentos incluído
+        .nest("/salon-settings", salon_settings::router(pool, config.clone())) // ✅ Módulo de configurações do salão incluído
         .layer(from_fn(auth_middleware))
         .layer(
             ServiceBuilder::new()
