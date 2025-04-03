@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Extension, Json, Path}, // Adicionando `Path` aqui
+    extract::{Extension, Json, Path},
     http::StatusCode,
 };
 use diesel::prelude::*;
@@ -9,15 +9,16 @@ use crate::models::reservation::{Reservation, NewReservation};
 use crate::schema::reservations;
 use crate::services::reservation_service;
 use tracing::error;
+use std::sync::Arc;  // Certifique-se de importar `Arc`
 
 #[axum::debug_handler]
 pub async fn create_reservation(
-    Extension(pool): Extension<Arc<Pool>>, // Passando Arc<Pool>
-    Extension(user_id): Extension<Uuid>, // Obtém `user_id` autenticado via middleware
+    Extension(pool): Extension<Arc<Pool>>,  // Recebendo Arc<Pool>
+    Extension(user_id): Extension<Uuid>,   // Obtém `user_id` autenticado via middleware
     Json(payload): Json<NewReservation>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
-    // Obtem a conexão do pool
-    let mut conn = pool.get().map_err(|e| {
+    // Obtem a conexão do pool (desembrulhando o Arc para acessar o Pool)
+    let mut conn = pool.as_ref().get().map_err(|e| {
         error!("❌ Erro ao obter conexão com o banco de dados: {:?}", e);
         (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
@@ -44,11 +45,11 @@ pub async fn create_reservation(
 
 #[axum::debug_handler]
 pub async fn get_reservation(
-    Extension(pool): Extension<Arc<Pool>>, // Passando Arc<Pool>
+    Extension(pool): Extension<Arc<Pool>>,  // Recebendo Arc<Pool>
     Path(reservation_id): Path<Uuid>,
 ) -> Result<Json<Reservation>, (StatusCode, String)> {
-    // Obtem a conexão do pool
-    let mut conn = pool.get().map_err(|e| {
+    // Obtem a conexão do pool (desembrulhando o Arc para acessar o Pool)
+    let mut conn = pool.as_ref().get().map_err(|e| {
         error!("❌ Erro ao obter conexão com o banco de dados: {:?}", e);
         (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
@@ -65,10 +66,10 @@ pub async fn get_reservation(
 
 #[axum::debug_handler]
 pub async fn get_all_reservations(
-    Extension(pool): Extension<Arc<Pool>>, // Passando Arc<Pool>
+    Extension(pool): Extension<Arc<Pool>>,  // Recebendo Arc<Pool>
 ) -> Result<Json<Vec<Reservation>>, (StatusCode, String)> {
-    // Obtem a conexão do pool
-    let mut conn = pool.get().map_err(|e| {
+    // Obtem a conexão do pool (desembrulhando o Arc para acessar o Pool)
+    let mut conn = pool.as_ref().get().map_err(|e| {
         error!("❌ Erro ao obter conexão com o banco de dados: {:?}", e);
         (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
     })?;
