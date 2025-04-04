@@ -8,7 +8,7 @@ use std::sync::Arc;
 use crate::{
     db::Pool,
     config::Config,
-    middleware::auth_middleware::{auth_middleware, Claims},
+    middleware::auth_middleware::AuthMiddleware,  // Usando AuthMiddleware corretamente
     handlers::user::{
         list_users,
         get_user_by_id,
@@ -25,5 +25,5 @@ pub fn router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
         .route("/:id/role", patch(update_user_role)) // Rota para atualizar o papel de um usuário
         .layer(Extension(pool))  // Passando o pool de conexões
         .layer(Extension(config)) // Passando as configurações
-        .layer(auth_middleware)  // Aplicando o middleware de autenticação para todas as rotas
+        .layer(AuthMiddleware)  // Middleware de autenticação para todas as rotas
 }
