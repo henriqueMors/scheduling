@@ -13,12 +13,13 @@ use std::pin::Pin;
 use std::future::Future;
 use std::task::{Context, Poll};
 use tower::Service;
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: String, // ID do usuário
-    pub exp: usize,  // Expiração do token (timestamp UNIX)
-    pub role: String, // Papel do usuário (client, admin, admin_master)
+    pub sub: String,
+    pub exp: usize,
+    pub role: String,
 }
 
 #[derive(Clone)]
@@ -51,18 +52,17 @@ where
     }
 
     fn call(&mut self, mut req: Request<Body>) -> Self::Future {
-        Box::pin(async move {
-            let config = req.extensions().get::<crate::config::Config>()
-                .expect("Config not found in extensions");
+        let config = Arc::clone(req.extensions().get::<Arc<crate::config::Config>>()
+            .expect("Config not found in extensions"));
 
+        Box::pin(async move {
             let headers = req.headers();
 
-            // Obtém o token do cabeçalho Authorization
             let token = headers
                 .get(header::AUTHORIZATION)
                 .and_then(|h| h.to_str().ok())
                 .and_then(|h| h.strip_prefix("Bearer "))
-                .map(|t| t.to_string());
+                .map(str::to_owned);
 
             let token = match token {
                 Some(t) => t,
@@ -77,7 +77,6 @@ where
 
             info!("🔑 Token recebido: {}", token);
 
-            // Decodifica o JWT
             let key = DecodingKey::from_secret(config.secret_key.as_bytes());
             let decoded = decode::<Claims>(&token, &key, &Validation::default());
 
@@ -92,7 +91,6 @@ where
                 }
             };
 
-            // Verifica expiração do token
             let now = chrono::Utc::now().timestamp() as usize;
             if claims.exp < now {
                 error!("❌ Token expirado!");
@@ -102,7 +100,6 @@ where
                     .unwrap());
             }
 
-            // Converte o `sub` para `Uuid`
             let user_id = match claims.sub.parse::<Uuid>() {
                 Ok(id) => id,
                 Err(_) => {
@@ -114,15 +111,11 @@ where
                 }
             };
 
-            // Injeta user_id, claims e role na requisição
-            req.extensions_mut().insert(user_id); // Uuid
-            req.extensions_mut().insert(claims.clone()); // Claims
-            req.extensions_mut().insert(claims.role.clone()); // String: role
+            req.extensions_mut().insert(user_id);
+            req.extensions_mut().insert(claims.clone());
+            req.extensions_mut().insert(claims.role.clone());
 
-            info!(
-                "✅ Acesso autorizado para usuário com ID: {} (Role: {})",
-                user_id, claims.role
-            );
+            info!("✅ Acesso autorizado para usuário com ID: {} (Role: {})", user_id, claims.role);
 
             self.inner.call(req).await
         })
