@@ -3,13 +3,12 @@ use axum::{
     routing::{get, post, put, delete},
     Router,
     http::StatusCode,
-    middleware::from_fn,
 };
 use uuid::Uuid;
 use serde_json::json;
 use diesel::prelude::*;
 use crate::db::Pool;
-use crate::middleware::auth_middleware::require_role;
+use crate::middleware::auth_middleware::{AuthMiddleware, RequireRole};  // Importação corrigida
 use crate::models::reservation::{Reservation, NewReservation, UpdateReservation};
 use crate::services::reservation_service;
 
@@ -143,19 +142,23 @@ fn map_not_found_error(e: diesel::result::Error) -> (StatusCode, String) {
 
 /// 🔹 Agrega as rotas de reservas.
 pub fn router(pool: Pool) -> Router {
+    // Cria um ServiceBuilder com todas as camadas de middleware necessárias
+    let middleware_stack = tower::ServiceBuilder::new()
+        .layer(AuthMiddleware) // Primeiro verifica a autenticação
+        .layer(RequireRole::new("client".to_string())); // Depois verifica a role
+
     Router::new()
         .route(
             "/",
             get(get_reservations)    // Rota GET para listar as reservas
                 .post(create_reservation) // Rota POST para criar uma nova reserva
-                .layer(from_fn(|req, next| require_role("client".to_string(), req, next))), // Camada de autenticação para clientes
         )
         .route(
             "/:reservation_id",
             get(get_reservation)     // Rota GET para buscar uma reserva por ID
                 .put(update_reservation)  // Rota PUT para atualizar uma reserva existente
                 .delete(delete_reservation) // Rota DELETE para remover uma reserva
-                .layer(from_fn(|req, next| require_role("client".to_string(), req, next))), // Camada de autenticação para clientes
         )
+        .layer(middleware_stack)
         .layer(Extension(pool)) // Compartilha o pool de conexões com o banco de dados
 }
