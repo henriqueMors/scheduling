@@ -15,6 +15,8 @@ use std::task::{Context, Poll};
 use tower::Service;
 use std::sync::Arc;
 
+pub use RequireRole as require_role;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String,
@@ -120,6 +122,71 @@ where
             let req = Request::from_parts(parts, body);
 
             info!("✅ Acesso autorizado para usuário com ID: {} (Role: {})", user_id, claims.role);
+
+            inner.call(req).await
+        })
+    }
+}
+
+// Novo middleware para verificação de roles
+#[derive(Clone)]
+pub struct RequireRole {
+    required_role: String, // Ou use um enum se preferir
+}
+
+impl RequireRole {
+    pub fn new(required_role: String) -> Self {
+        Self { required_role }
+    }
+}
+
+impl<S> tower::Layer<S> for RequireRole {
+    type Service = RequireRoleService<S>;
+
+    fn layer(&self, inner: S) -> Self::Service {
+        RequireRoleService {
+            inner,
+            required_role: self.required_role.clone(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct RequireRoleService<S> {
+    inner: S,
+    required_role: String,
+}
+
+impl<S> Service<Request<Body>> for RequireRoleService<S>
+where
+    S: Service<Request<Body>, Response = Response, Error = Infallible> + Clone + Send + 'static,
+    S::Future: Send + 'static,
+{
+    type Response = Response;
+    type Error = Infallible;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: Request<Body>) -> Self::Future {
+        let role = req.extensions()
+            .get::<String>()
+            .cloned()
+            .unwrap_or_default();
+        
+        let required_role = self.required_role.clone();
+        let inner = self.inner.clone();
+
+        Box::pin(async move {
+            if role != required_role {
+                error!("❌ Acesso negado: Role {} requerida, mas possui {}", required_role, role);
+                return Ok(Response::builder()
+                    .status(StatusCode::FORBIDDEN)
+                    .body(Body::empty())
+                    .unwrap());
+            }
 
             inner.call(req).await
         })
