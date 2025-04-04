@@ -12,10 +12,8 @@ use std::convert::Infallible;
 use std::pin::Pin;
 use std::future::Future;
 use std::task::{Context, Poll};
-use tower::Service;
+use tower::{Service, Layer};
 use std::sync::Arc;
-
-pub use RequireRole as require_role;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -24,10 +22,11 @@ pub struct Claims {
     pub role: String,
 }
 
+// Implementação principal do AuthMiddleware
 #[derive(Clone)]
 pub struct AuthMiddleware;
 
-impl<S> tower::Layer<S> for AuthMiddleware {
+impl<S> Layer<S> for AuthMiddleware {
     type Service = AuthMiddlewareService<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
@@ -54,12 +53,11 @@ where
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
-        // Extrai todas as partes necessárias da Request antes do async move
         let (mut parts, body) = req.into_parts();
         let headers = parts.headers.clone();
         let config = Arc::clone(parts.extensions.get::<Arc<crate::config::Config>>()
             .expect("Config not found in extensions"));
-        let inner = self.inner.clone();
+        let mut inner = self.inner.clone();  // Corrigido: adicionado 'mut'
 
         Box::pin(async move {
             let token = headers
@@ -115,7 +113,6 @@ where
                 }
             };
 
-            // Reconstrói a Request com os dados extras
             parts.extensions.insert(user_id);
             parts.extensions.insert(claims.clone());
             parts.extensions.insert(claims.role.clone());
@@ -128,10 +125,10 @@ where
     }
 }
 
-// Novo middleware para verificação de roles
+// Implementação do RequireRole para verificação de permissões
 #[derive(Clone)]
 pub struct RequireRole {
-    required_role: String, // Ou use um enum se preferir
+    required_role: String,
 }
 
 impl RequireRole {
@@ -140,7 +137,7 @@ impl RequireRole {
     }
 }
 
-impl<S> tower::Layer<S> for RequireRole {
+impl<S> Layer<S> for RequireRole {
     type Service = RequireRoleService<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
@@ -177,7 +174,7 @@ where
             .unwrap_or_default();
         
         let required_role = self.required_role.clone();
-        let inner = self.inner.clone();
+        let mut inner = self.inner.clone();  // Corrigido: adicionado 'mut'
 
         Box::pin(async move {
             if role != required_role {
@@ -192,3 +189,6 @@ where
         })
     }
 }
+
+// Re-export para facilitar o uso
+pub use RequireRole as require_role;
