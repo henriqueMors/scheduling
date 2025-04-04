@@ -1,6 +1,6 @@
 use axum::{
     extract::Request,
-    http::{StatusCode, header},
+    http::{StatusCode, header, HeaderMap},
     response::Response,
     body::Body,
 };
@@ -51,13 +51,15 @@ where
         self.inner.poll_ready(cx)
     }
 
-    fn call(&mut self, mut req: Request<Body>) -> Self::Future {
-        let config = Arc::clone(req.extensions().get::<Arc<crate::config::Config>>()
+    fn call(&mut self, req: Request<Body>) -> Self::Future {
+        // Extrai todas as partes necessárias da Request antes do async move
+        let (mut parts, body) = req.into_parts();
+        let headers = parts.headers.clone();
+        let config = Arc::clone(parts.extensions.get::<Arc<crate::config::Config>>()
             .expect("Config not found in extensions"));
+        let inner = self.inner.clone();
 
         Box::pin(async move {
-            let headers = req.headers();
-
             let token = headers
                 .get(header::AUTHORIZATION)
                 .and_then(|h| h.to_str().ok())
@@ -111,13 +113,15 @@ where
                 }
             };
 
-            req.extensions_mut().insert(user_id);
-            req.extensions_mut().insert(claims.clone());
-            req.extensions_mut().insert(claims.role.clone());
+            // Reconstrói a Request com os dados extras
+            parts.extensions.insert(user_id);
+            parts.extensions.insert(claims.clone());
+            parts.extensions.insert(claims.role.clone());
+            let req = Request::from_parts(parts, body);
 
             info!("✅ Acesso autorizado para usuário com ID: {} (Role: {})", user_id, claims.role);
 
-            self.inner.call(req).await
+            inner.call(req).await
         })
     }
 }

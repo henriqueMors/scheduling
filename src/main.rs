@@ -1,4 +1,4 @@
-use axum::{Router, Extension, middleware::from_fn};
+use axum::{Router, Extension};
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use std::net::SocketAddr;
@@ -20,7 +20,7 @@ mod middleware;
 
 use crate::routes::{professionals, users, availabilities, appointments, salon_settings};
 use crate::routes::services as service_routes;
-use crate::middleware::auth_middleware::auth_middleware;
+use crate::middleware::auth_middleware::AuthMiddleware;
 use crate::middleware::rate_limit::{rate_limit_middleware, strict_rate_limit_middleware};
 use crate::middleware::cors::cors_middleware;
 use crate::handlers::auth::auth_router;
@@ -57,16 +57,15 @@ async fn main() {
         .route("/health", axum::routing::get(|| async { "Service is running!" }))
         .layer(cors_middleware());
 
-    // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + LOGS
+    // ✅ Rotas protegidas (com autenticação) → RATE LIMIT + CORS + AUTH
     let protected_routes = Router::new()
-        .nest("/reservations", routes::reservations::router(pool.clone()))
         .nest("/professionals", professionals::router(pool.clone(), config.clone()))
-        .nest("/users", users::router(pool.clone(), config.clone())) // ✅ Módulo de usuários incluído
-        .nest("/services", service_routes::router(pool.clone(), config.clone())) // ✅ Módulo de serviços incluído
-        .nest("/availabilities", availabilities::router(pool.clone(), config.clone())) // ✅ Módulo de horários incluído
-        .nest("/appointments", appointments::router(pool.clone(), config.clone())) // ✅ Módulo de agendamentos incluído
-        .nest("/salon-settings", salon_settings::router(pool.clone(), config.clone())) // ✅ Módulo de configurações do salão incluído
-        .layer(from_fn(auth_middleware))
+        .nest("/users", users::router(pool.clone(), config.clone()))
+        .nest("/services", service_routes::router(pool.clone(), config.clone()))
+        .nest("/availabilities", availabilities::router(pool.clone(), config.clone()))
+        .nest("/appointments", appointments::router(pool.clone(), config.clone()))
+        .nest("/salon-settings", salon_settings::router(pool.clone(), config.clone()))
+        .layer(AuthMiddleware)  // ✅ Middleware de autenticação como layer
         .layer(
             ServiceBuilder::new()
                 .layer(strict_rate_limit_middleware())
@@ -78,7 +77,7 @@ async fn main() {
         .nest("/auth", auth_routes)
         .merge(open_routes)
         .merge(protected_routes)
-        .layer(Extension(pool))  // Passando o pool de conexões
+        .layer(Extension(pool))
         .layer(Extension(config));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
