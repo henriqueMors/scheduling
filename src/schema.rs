@@ -86,6 +86,7 @@ diesel::table! {
         password_hash -> Text,
         role -> Text,
         sms_verified -> Bool,
+        created_at -> Timestamp,
     }
 }
 
