@@ -82,7 +82,7 @@ diesel::table! {
     users (id) {
         id -> Uuid,
         name -> Text,
-        email -> Text,
+        phone -> Text,
         password_hash -> Text,
         role -> Text,
         sms_verified -> Bool,

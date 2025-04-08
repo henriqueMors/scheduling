@@ -4,7 +4,6 @@ use uuid::Uuid;
 use chrono::NaiveDateTime;
 use crate::schema::users;
 
-/// 🔹 Estrutura que representa o usuário no banco de dados
 #[derive(Debug, Queryable, Serialize, Deserialize, Selectable, Identifiable)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -16,6 +15,7 @@ pub struct User {
     pub role: String,                 // Função do usuário: "cliente", "admin", "profissional"
     pub created_at: NaiveDateTime,    // Data de criação do usuário
 }
+
 
 /// 🔹 Estrutura para criar um novo usuário
 #[derive(Debug, Serialize, Deserialize, Insertable)]
