@@ -1,1 +1,14 @@
--- Your SQL goes here
+ALTER TABLE services
+RENAME COLUMN name TO nome;
+
+ALTER TABLE services
+RENAME COLUMN description TO descricao;
+
+ALTER TABLE services
+ADD COLUMN duracao_min INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE services
+ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE services
+ALTER COLUMN preco TYPE DOUBLE PRECISION;
