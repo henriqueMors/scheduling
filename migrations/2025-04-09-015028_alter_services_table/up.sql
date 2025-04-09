@@ -1,14 +1,9 @@
-ALTER TABLE services
-RENAME COLUMN name TO nome;
+-- Renomear a coluna 'price' para 'preco'
+ALTER TABLE services RENAME COLUMN price TO preco;
 
-ALTER TABLE services
-RENAME COLUMN description TO descricao;
+-- Adiciona as novas colunas (duracao_min e ativo)
+ALTER TABLE services ADD COLUMN duracao_min INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE services ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
 
-ALTER TABLE services
-ADD COLUMN duracao_min INTEGER NOT NULL DEFAULT 0;
-
-ALTER TABLE services
-ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
-
-ALTER TABLE services
-ALTER COLUMN preco TYPE DOUBLE PRECISION;
+-- Modifica o tipo de dado da coluna 'preco' para DOUBLE PRECISION
+ALTER TABLE services ALTER COLUMN preco TYPE DOUBLE PRECISION;

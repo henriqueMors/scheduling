@@ -74,7 +74,9 @@ diesel::table! {
         id -> Uuid,
         name -> Text,
         description -> Nullable<Text>,
-        price -> Numeric,
+        preco -> Float8,
+        duracao_min -> Int4,
+        ativo -> Bool,
     }
 }
 
