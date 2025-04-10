@@ -1,7 +1,7 @@
 use diesel::{Queryable, Insertable, Identifiable, AsChangeset};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
-use chrono::{NaiveDate, NaiveTime};  // Usando NaiveDate para datas e NaiveTime para horários
+use chrono::{NaiveDate, NaiveTime};  // Importando corretamente os tipos NaiveDate e NaiveTime
 use crate::schema::availabilities;
 
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]

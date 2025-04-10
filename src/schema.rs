@@ -25,8 +25,9 @@ diesel::table! {
     availabilities (id) {
         id -> Uuid,
         professional_id -> Uuid,
-        available_time -> Timestamp,
-        status -> Text,
+        date -> Date,           // Deve ser do tipo Date no banco de dados
+        start_time -> Time,     // Se o tipo for Time no banco de dados
+        end_time -> Time,       // Se o tipo for Time no banco de dados
     }
 }
 
