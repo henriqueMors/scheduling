@@ -2,6 +2,7 @@ use diesel::{Queryable, Insertable, Identifiable, Selectable, Associations, AsCh
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use chrono::NaiveDateTime;
+use crate::models::user::User;
 use crate::schema::professionals;
 
 /// 🔹 Estrutura para representar um profissional (para consultas no banco de dados)
