@@ -9,8 +9,8 @@ use crate::schema::services;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Service {
     pub id: Uuid,                  // ID único do serviço
-    pub nome: String,              // Nome do serviço
-    pub descricao: Option<String>, // Descrição do serviço (opcional)
+    pub nome: String,              // Nome do serviço (renomeado de 'name' para 'nome')
+    pub descricao: Option<String>, // Descrição do serviço (renomeado de 'description' para 'descricao')
     pub preco: f64,                // Preço do serviço
     pub duracao_min: i32,          // Duração do serviço em minutos
     pub ativo: bool,               // Indica se o serviço está ativo ou não
@@ -21,7 +21,7 @@ pub struct Service {
 #[diesel(table_name = services)]
 pub struct NewService {
     pub nome: String,              // Nome do serviço
-    pub descricao: Option<String>, // Descrição do serviço (opcional)
+    pub descricao: Option<String>, // Descrição do serviço (renomeado de 'description' para 'descricao')
     pub preco: f64,                // Preço do serviço
     pub duracao_min: i32,          // Duração do serviço em minutos
     pub ativo: bool,               // Indica se o serviço está ativo ou não
