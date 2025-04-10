@@ -72,8 +72,8 @@ diesel::table! {
 diesel::table! {
     services (id) {
         id -> Uuid,
-        name -> Text,
-        description -> Nullable<Text>,
+        nome -> Text,
+        descricao -> Nullable<Text>,
         preco -> Float8,
         duracao_min -> Int4,
         ativo -> Bool,
