@@ -63,13 +63,12 @@ diesel::table! {
 diesel::table! {
     salon_settings (id) {
         id -> Uuid,
-        opening_hour -> Time,
-        closing_hour -> Time,
-        working_days -> Array<Nullable<Text>>,
-        created_at -> Timestamp,
+        opening_hour -> Time,  // No banco de dados, o tipo deve ser TIME para horários
+        closing_hour -> Time,  // No banco de dados, o tipo deve ser TIME para horários
+        working_days -> Array<Text>,  // Para um vetor de strings (ex: ["monday", "tuesday"])
+        created_at -> Timestamp,  // Usando TIMESTAMP para a data de criação
     }
 }
-
 diesel::table! {
     services (id) {
         id -> Uuid,
