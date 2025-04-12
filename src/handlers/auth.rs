@@ -8,7 +8,7 @@ use crate::db::Pool;
 use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
-use crate::schema::users::dsl::*;  // Alterado para usar o DSL
+use crate::schema::users::dsl::*;
 use crate::middleware::auth_middleware::Claims;
 use crate::middleware::auth_middleware::AuthMiddleware;
 use serde::{Serialize, Deserialize};
@@ -26,25 +26,44 @@ pub struct LoginRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginResponse {
     pub token: String,
+    pub user_id: Uuid,
+    pub role: String,
 }
 
 /// Endpoint para registro de usuário
 #[axum::debug_handler]
 pub async fn register_user(
-    Extension(pool): Extension<Arc<Pool>>,  // Passando Arc<Pool>
+    Extension(pool): Extension<Arc<Pool>>,
     Json(mut payload): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let mut conn = pool.get()
+    let mut conn = pool.get().map_err(|e| {
+        error!("Falha ao obter conexão: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
+
+    // Validação do telefone
+    if payload.phone.is_empty() {
+        return Err((StatusCode::BAD_REQUEST, "Telefone não pode ser vazio".to_string()));
+    }
+
+    payload.password_hash = hash_password(&payload.password_hash).map_err(|e| {
+        error!("Falha no hash: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
+
+    // Verifica se usuário já existe
+    let exists = users.filter(phone.eq(&payload.phone))
+        .select(id)
+        .first::<Uuid>(&mut conn)
+        .optional()
         .map_err(|e| {
-            error!("Falha ao obter conexão: {:?}", e);
+            error!("Erro ao verificar usuário existente: {:?}", e);
             (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
         })?;
 
-    payload.password_hash = hash_password(&payload.password_hash)
-        .map_err(|e| {
-            error!("Falha no hash: {:?}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+    if exists.is_some() {
+        return Err((StatusCode::CONFLICT, "Usuário já cadastrado".to_string()));
+    }
 
     let saved_user: User = diesel::insert_into(users)
         .values(&payload)
@@ -65,20 +84,17 @@ pub async fn login_user(
     Extension(config): Extension<Arc<Config>>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
-    let mut conn = pool.get()
-        .map_err(|e| {
-            error!("Falha ao obter conexão: {:?}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+    let mut conn = pool.get().map_err(|e| {
+        error!("Falha ao obter conexão: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
 
     info!("Tentativa de login: {}", payload.phone);
 
-    // Ajuste: utilizando `first` e limitando a consulta a um único resultado
     let user = users
         .filter(phone.eq(&payload.phone))
-        .limit(1)  // Limitando a consulta a apenas um resultado
         .first::<User>(&mut conn)
-        .optional()  // Tornando a consulta opcional
+        .optional()
         .map_err(|e| {
             error!("Erro na query: {:?}", e);
             (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
@@ -93,38 +109,37 @@ pub async fn login_user(
         return Err((StatusCode::UNAUTHORIZED, "Credenciais inválidas".to_string()));
     }
 
-    let token = generate_jwt(&user, &config)
-        .map_err(|e| {
-            error!("Erro ao gerar token: {:?}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+    let token = generate_jwt(&user, &config).map_err(|e| {
+        error!("Erro ao gerar token: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
 
     info!("Login bem-sucedido: {}", payload.phone);
-    Ok(Json(LoginResponse { token }))
+    Ok(Json(LoginResponse {
+        token,
+        user_id: user.id,
+        role: user.role,
+    }))
 }
 
-/// Endpoint /me
+/// Endpoint /me - Retorna informações do usuário autenticado
 #[axum::debug_handler]
 pub async fn me(
     Extension(pool): Extension<Arc<Pool>>,
     Extension(claims): Extension<Claims>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let user_id = claims.sub.parse::<Uuid>()
-        .map_err(|_| {
-            error!("ID inválido no token");
-            (StatusCode::BAD_REQUEST, "ID inválido".to_string())
-        })?;
+    let user_id = claims.sub.parse::<Uuid>().map_err(|_| {
+        error!("ID inválido no token");
+        (StatusCode::BAD_REQUEST, "ID inválido".to_string())
+    })?;
 
-    let mut conn = pool.get()
-        .map_err(|e| {
-            error!("Falha na conexão: {:?}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+    let mut conn = pool.get().map_err(|e| {
+        error!("Falha na conexão: {:?}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+    })?;
 
-    // Ajuste: utilizando `first` e limitando a consulta a um único resultado
     let user = users
         .filter(id.eq(user_id))
-        .limit(1)  // Limitando a consulta a apenas um resultado
         .first::<User>(&mut conn)
         .map_err(|e| {
             error!("Usuário não encontrado: {} - {:?}", user_id, e);
@@ -140,7 +155,12 @@ pub fn auth_router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me).layer(middleware::from_fn(authMiddleware)))
+        .route("/me", get(me).layer(middleware::from_fn_with_state(
+            config.clone(),
+            move |config: Arc<Config>, req, next| {
+                AuthMiddleware::auth(req, next, config)
+            }
+        )))
         .layer(Extension(pool))
         .layer(Extension(config))
 }

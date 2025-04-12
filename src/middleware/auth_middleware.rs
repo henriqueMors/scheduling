@@ -8,21 +8,19 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use tracing::{info, error};
 use uuid::Uuid;
-use std::convert::Infallible;
-use std::pin::Pin;
-use std::future::Future;
-use std::task::{Context, Poll};
-use tower::{Service, Layer};
 use std::sync::Arc;
+use tower::{Service, Layer};
+use chrono::Utc;
 
+/// Claims do token JWT
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-    pub role: String,
+    pub sub: String,    // ID do usuário
+    pub exp: usize,     // Timestamp de expiração
+    pub role: String,   // Role do usuário
 }
 
-// Implementação principal do AuthMiddleware
+/// Middleware principal de autenticação
 #[derive(Clone)]
 pub struct AuthMiddleware;
 
@@ -41,11 +39,11 @@ pub struct AuthMiddlewareService<S> {
 
 impl<S> Service<Request<Body>> for AuthMiddlewareService<S>
 where
-    S: Service<Request<Body>, Response = Response, Error = Infallible> + Clone + Send + 'static,
+    S: Service<Request<Body>, Response = Response> + Clone + Send + 'static,
     S::Future: Send + 'static,
 {
     type Response = Response;
-    type Error = Infallible;
+    type Error = S::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -55,11 +53,23 @@ where
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let (mut parts, body) = req.into_parts();
         let headers = parts.headers.clone();
-        let config = Arc::clone(parts.extensions.get::<Arc<crate::config::Config>>()
-            .expect("Config not found in extensions"));
-        let mut inner = self.inner.clone();  // Corrigido: adicionado 'mut'
+        let config = match parts.extensions.get::<Arc<crate::config::Config>>() {
+            Some(cfg) => Arc::clone(cfg),
+            None => {
+                error!("Configuração não encontrada nas extensões");
+                return Box::pin(async {
+                    Ok(Response::builder()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(Body::empty())
+                        .unwrap())
+                });
+            }
+        };
+
+        let mut inner = self.inner.clone();
 
         Box::pin(async move {
+            // Extração do token
             let token = headers
                 .get(header::AUTHORIZATION)
                 .and_then(|h| h.to_str().ok())
@@ -69,7 +79,7 @@ where
             let token = match token {
                 Some(t) => t,
                 None => {
-                    error!("❌ Nenhum token fornecido no cabeçalho.");
+                    error!("Nenhum token fornecido no cabeçalho");
                     return Ok(Response::builder()
                         .status(StatusCode::UNAUTHORIZED)
                         .body(Body::empty())
@@ -77,15 +87,16 @@ where
                 }
             };
 
-            info!("🔑 Token recebido: {}", token);
+            info!("Token recebido: {}", token);
 
+            // Validação do token
             let key = DecodingKey::from_secret(config.secret_key.as_bytes());
             let decoded = decode::<Claims>(&token, &key, &Validation::default());
 
             let claims = match decoded {
                 Ok(token_data) => token_data.claims,
                 Err(e) => {
-                    error!("❌ Erro ao validar token: {:?}", e);
+                    error!("Erro ao validar token: {:?}", e);
                     return Ok(Response::builder()
                         .status(StatusCode::UNAUTHORIZED)
                         .body(Body::empty())
@@ -93,19 +104,21 @@ where
                 }
             };
 
-            let now = chrono::Utc::now().timestamp() as usize;
+            // Verificação de expiração
+            let now = Utc::now().timestamp() as usize;
             if claims.exp < now {
-                error!("❌ Token expirado!");
+                error!("Token expirado");
                 return Ok(Response::builder()
                     .status(StatusCode::UNAUTHORIZED)
                     .body(Body::empty())
                     .unwrap());
             }
 
+            // Validação do ID do usuário
             let user_id = match claims.sub.parse::<Uuid>() {
                 Ok(id) => id,
                 Err(_) => {
-                    error!("❌ ID inválido no token.");
+                    error!("ID inválido no token");
                     return Ok(Response::builder()
                         .status(StatusCode::BAD_REQUEST)
                         .body(Body::empty())
@@ -113,27 +126,30 @@ where
                 }
             };
 
+            // Adiciona informações ao request
             parts.extensions.insert(user_id);
             parts.extensions.insert(claims.clone());
             parts.extensions.insert(claims.role.clone());
             let req = Request::from_parts(parts, body);
 
-            info!("✅ Acesso autorizado para usuário com ID: {} (Role: {})", user_id, claims.role);
+            info!("Acesso autorizado para usuário: {} (Role: {})", user_id, claims.role);
 
             inner.call(req).await
         })
     }
 }
 
-// Implementação do RequireRole para verificação de permissões
+/// Middleware para verificação de roles
 #[derive(Clone)]
 pub struct RequireRole {
     required_role: String,
 }
 
 impl RequireRole {
-    pub fn new(required_role: String) -> Self {
-        Self { required_role }
+    pub fn new(required_role: impl Into<String>) -> Self {
+        Self {
+            required_role: required_role.into(),
+        }
     }
 }
 
@@ -156,11 +172,11 @@ pub struct RequireRoleService<S> {
 
 impl<S> Service<Request<Body>> for RequireRoleService<S>
 where
-    S: Service<Request<Body>, Response = Response, Error = Infallible> + Clone + Send + 'static,
+    S: Service<Request<Body>, Response = Response> + Clone + Send + 'static,
     S::Future: Send + 'static,
 {
     type Response = Response;
-    type Error = Infallible;
+    type Error = S::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -174,11 +190,11 @@ where
             .unwrap_or_default();
         
         let required_role = self.required_role.clone();
-        let mut inner = self.inner.clone();  // Corrigido: adicionado 'mut'
+        let mut inner = self.inner.clone();
 
         Box::pin(async move {
             if role != required_role {
-                error!("❌ Acesso negado: Role {} requerida, mas possui {}", required_role, role);
+                error!("Acesso negado: Role {} requerida, mas possui {}", required_role, role);
                 return Ok(Response::builder()
                     .status(StatusCode::FORBIDDEN)
                     .body(Body::empty())
