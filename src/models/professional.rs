@@ -4,6 +4,7 @@ use uuid::Uuid;
 use chrono::NaiveDateTime;
 use crate::models::user::User;
 use crate::schema::professionals;
+use diesel::sql_types::{Text, Array};
 
 /// 🔹 Estrutura para representar um profissional (para consultas no banco de dados)
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable, Associations, Selectable)]
@@ -13,7 +14,7 @@ pub struct Professional {
     pub id: Uuid,                // ID do profissional
     pub user_id: Uuid,           // ID do usuário (associado a um User)
     pub bio: Option<String>,     // Biografia (opcional)
-    pub specialties: Vec<String>,// Especialidades (como uma lista de strings)
+    pub specialties: Option<Vec<String>>, // Especialidades (como uma lista de strings)
     pub created_at: NaiveDateTime, // Data de criação (data e hora)
 }
 
@@ -23,7 +24,7 @@ pub struct Professional {
 pub struct NewProfessional {
     pub user_id: Uuid,           // ID do usuário associado ao profissional
     pub bio: Option<String>,     // Biografia (opcional)
-    pub specialties: Vec<String>,// Especialidades (como uma lista de strings)
+    pub specialties: Option<Vec<String>>, // Especialidades (como uma lista de strings)
 }
 
 /// 🔹 Estrutura para atualizar os dados de um profissional (para alteração no banco)
