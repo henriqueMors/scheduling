@@ -9,7 +9,8 @@ use crate::config::Config;
 use crate::services::auth_service::{hash_password, verify_password, generate_jwt};
 use crate::models::user::{User, NewUser};
 use crate::schema::users::dsl::*;  // Alterado para usar o DSL
-use crate::middleware::auth_middleware::{auth_middleware, Claims};
+use crate::middleware::auth_middleware::Claims;
+use crate::middleware::auth_middleware::AuthMiddleware;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use tracing::{info, error};
@@ -139,7 +140,7 @@ pub fn auth_router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
     Router::new()
         .route("/register", post(register_user))
         .route("/login", post(login_user))
-        .route("/me", get(me).layer(middleware::from_fn(auth_middleware)))
+        .route("/me", get(me).layer(middleware::from_fn(authMiddleware)))
         .layer(Extension(pool))
         .layer(Extension(config))
 }
