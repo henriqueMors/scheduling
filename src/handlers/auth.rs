@@ -14,6 +14,8 @@ use crate::middleware::auth_middleware::AuthMiddleware;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use tracing::{info, error};
+use tower::Layer;
+use tower::Service;
 
 /// Estrutura para requisição de login
 #[derive(Debug, Serialize, Deserialize)]
@@ -158,7 +160,7 @@ pub fn auth_router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
         .route("/me", get(me).layer(middleware::from_fn_with_state(
             config.clone(),
             move |config: Arc<Config>, req, next| {
-                AuthMiddleware::auth(req, next, config)
+                AuthMiddleware {}.layer(next).call(req)
             }
         )))
         .layer(Extension(pool))

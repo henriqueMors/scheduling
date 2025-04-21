@@ -11,6 +11,9 @@ use uuid::Uuid;
 use std::sync::Arc;
 use tower::{Service, Layer};
 use chrono::Utc;
+use std::pin::Pin;
+use futures::future::Future;
+use std::task::{Context, Poll};
 
 /// Claims do token JWT
 #[derive(Debug, Serialize, Deserialize, Clone)]
