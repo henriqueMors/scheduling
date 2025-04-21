@@ -3,7 +3,6 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use chrono::{NaiveDate, NaiveTime};
 use crate::schema::availabilities;
-use diesel::dsl::date;
 
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]
 #[diesel(table_name = availabilities)]
