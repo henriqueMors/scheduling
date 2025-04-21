@@ -4,33 +4,34 @@ use uuid::Uuid;
 use chrono::NaiveDateTime;
 use crate::models::user::User;
 use crate::schema::professionals;
-use diesel::sql_types::{Text, Array};
+use diesel::sql_types::{Text, Array, Nullable};
 
-/// 🔹 Estrutura para representar um profissional (para consultas no banco de dados)
+/// 🔹 Estrutura para representar um profissional
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable, Associations, Selectable)]
 #[diesel(table_name = professionals)]
-#[diesel(belongs_to(User))]  // Relacionamento entre Professional e User
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]  // Adicione esta linha
 pub struct Professional {
-    pub id: Uuid,                // ID do profissional
-    pub user_id: Uuid,           // ID do usuário (associado a um User)
-    pub bio: Option<String>,     // Biografia (opcional)
-    pub specialties: Option<Vec<String>>, // Especialidades (como uma lista de strings)
-    pub created_at: NaiveDateTime, // Data de criação (data e hora)
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub bio: Option<String>,
+    pub specialties: Option<Vec<Option<String>>>,  // Alterado para Option<Vec<Option<String>>>
+    pub created_at: NaiveDateTime,
 }
 
-/// 🔹 Estrutura para criar um novo profissional (para inserção no banco)
+/// 🔹 Estrutura para criar um novo profissional
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = professionals)]
 pub struct NewProfessional {
-    pub user_id: Uuid,           // ID do usuário associado ao profissional
-    pub bio: Option<String>,     // Biografia (opcional)
-    pub specialties: Option<Vec<String>>, // Especialidades (como uma lista de strings)
+    pub user_id: Uuid,
+    pub bio: Option<String>,
+    pub specialties: Option<Vec<Option<String>>>,  // Alterado para Option<Vec<Option<String>>>
 }
 
-/// 🔹 Estrutura para atualizar os dados de um profissional (para alteração no banco)
+/// 🔹 Estrutura para atualizar os dados de um profissional
 #[derive(Debug, AsChangeset, Deserialize)]
 #[diesel(table_name = professionals)]
 pub struct UpdateProfessional {
-    pub bio: Option<String>,     // Biografia (opcional)
-    pub specialties: Option<Vec<String>>, // Especialidades (opcional)
+    pub bio: Option<String>,
+    pub specialties: Option<Vec<Option<String>>>,  // Alterado para Option<Vec<Option<String>>>
 }
