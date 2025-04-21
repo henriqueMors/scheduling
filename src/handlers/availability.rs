@@ -22,9 +22,9 @@ pub async fn create_availability(
 ) -> Result<Json<Availability>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let new_availability = diesel::insert_into(availabilities)  // Aqui está a tabela `availabilities` 
+    let new_availability = diesel::insert_into(availabilities)
         .values(&payload)
-        .get_result::<Availability>(&mut conn) // A consulta é feita em `availabilities` e não na tabela diretamente
+        .get_result::<Availability>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(new_availability))
@@ -33,28 +33,27 @@ pub async fn create_availability(
 // 🔹 Lista todos os horários disponíveis de um profissional
 pub async fn list_availabilities_by_professional(
     Extension(pool): Extension<Pool>,
-    Path(professional_uuid): Path<Uuid>,  // Renomeando para evitar conflito com a coluna
+    Path(professional_uuid): Path<Uuid>,
 ) -> Result<Json<Vec<Availability>>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Filtrando pela coluna `professional_id` da tabela `availabilities`
-    let availabilities = availabilities
-        .filter(professional_id.eq(professional_uuid))  // Aqui, estamos filtrando pelas colunas corretamente
-        .load::<Availability>(&mut conn)  // O Diesel sabe que você quer os dados da tabela `availabilities`
+    let availability_list = availabilities
+        .filter(professional_id.eq(professional_uuid))
+        .load::<Availability>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(availabilities))
+    Ok(Json(availability_list))
 }
 
 // 🔹 Atualiza um horário disponível
 pub async fn update_availability(
     Extension(pool): Extension<Pool>,
-    Path(other_id): Path<Uuid>,  // Renomeando para evitar conflito com a coluna `id`
+    Path(availability_id): Path<Uuid>,
     Json(update): Json<UpdateAvailability>,
 ) -> Result<Json<Availability>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let updated_availability = diesel::update(availabilities.filter(id.eq(other_id)))  // Corrigindo o uso de `id`
+    let updated_availability = diesel::update(availabilities.filter(id.eq(availability_id)))
         .set(update)
         .get_result::<Availability>(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -65,13 +64,22 @@ pub async fn update_availability(
 // 🔹 Deleta um horário disponível
 pub async fn delete_availability(
     Extension(pool): Extension<Pool>,
-    Path(other_id): Path<Uuid>,  // Renomeando para evitar conflito com a coluna `id`
+    Path(availability_id): Path<Uuid>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     let mut conn = pool.get().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    diesel::delete(availabilities.filter(id.eq(other_id)))  // Corrigindo o uso de `id`
+    diesel::delete(availabilities.filter(id.eq(availability_id)))
         .execute(&mut conn)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+// 🔹 Configuração das rotas
+pub fn availability_routes() -> Router {
+    Router::new()
+        .route("/availabilities", post(create_availability))
+        .route("/availabilities/:professional_id", get(list_availabilities_by_professional))
+        .route("/availabilities/:id", put(update_availability))
+        .route("/availabilities/:id", delete(delete_availability))
 }
