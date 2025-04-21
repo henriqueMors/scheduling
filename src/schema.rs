@@ -25,10 +25,12 @@ diesel::table! {
     availabilities (id) {
         id -> Uuid,
         professional_id -> Uuid,
-        available_time -> Timestamp,
-        status -> Text,
+        date -> Date,
+        start_time -> Time,
+        end_time -> Time,
     }
 }
+
 
 diesel::table! {
     clients (id) {
