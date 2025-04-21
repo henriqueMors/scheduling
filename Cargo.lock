@@ -1272,6 +1272,7 @@ dependencies = [
  "axum",
  "chrono",
  "diesel",
+ "diesel_derives",
  "diesel_migrations",
  "dotenvy",
  "futures",
