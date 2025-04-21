@@ -1,6 +1,7 @@
 use chrono::{NaiveDateTime, NaiveTime}; // Importando os tipos de data e hora corretos
 use diesel::{Queryable, Insertable, AsChangeset, Identifiable};
 use serde::{Serialize, Deserialize};
+use serde_json::Value; // Para armazenar como JSON
 use uuid::Uuid;
 use crate::schema::salon_settings;
 
@@ -8,10 +9,11 @@ use crate::schema::salon_settings;
 #[diesel(table_name = salon_settings)]
 pub struct SalonSetting {
     pub id: Uuid,
-    pub opening_hour: NaiveTime,  // Usando NaiveTime para hora
-    pub closing_hour: NaiveTime,  // Usando NaiveTime para hora
-    pub working_days: Vec<String>, // Ex: ["monday", "tuesday", "wednesday"]
-    pub created_at: NaiveDateTime, // Usando NaiveDateTime para data
+    pub opening_hour: NaiveTime,        // Usando NaiveTime para hora
+    pub closing_hour: NaiveTime,        // Usando NaiveTime para hora
+    #[serde(with = "serde_json")]       // Usando Serde para serializar/ desserializar para JSON
+    pub working_days: Value,            // Agora armazenando como JSON (armazenado como String no banco de dados)
+    pub created_at: NaiveDateTime,      // Usando NaiveDateTime para data
 }
 
 #[derive(Debug, Insertable, Deserialize)]
@@ -19,7 +21,8 @@ pub struct SalonSetting {
 pub struct NewSalonSetting {
     pub opening_hour: NaiveTime,
     pub closing_hour: NaiveTime,
-    pub working_days: Vec<String>, // Ex: ["monday", "tuesday", "wednesday"]
+    #[serde(with = "serde_json")]       // Usando Serde para serializar/ desserializar para JSON
+    pub working_days: Value,           // Agora armazenando como JSON (armazenado como String no banco de dados)
 }
 
 #[derive(Debug, AsChangeset, Deserialize)]
@@ -27,5 +30,6 @@ pub struct NewSalonSetting {
 pub struct UpdateSalonSetting {
     pub opening_hour: Option<NaiveTime>,
     pub closing_hour: Option<NaiveTime>,
-    pub working_days: Option<Vec<String>>, // Optional para o update
+    #[serde(with = "serde_json")]       // Usando Serde para serializar/ desserializar para JSON
+    pub working_days: Option<Value>,   // Optional para o update
 }

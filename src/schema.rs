@@ -64,9 +64,10 @@ diesel::table! {
 diesel::table! {
     salon_settings (id) {
         id -> Uuid,
+        professional_id -> Uuid,
         opening_hour -> Time,
         closing_hour -> Time,
-        working_days -> Array<Nullable<Text>>,
+        working_days -> Text, // Armazenado como JSON em formato string
         created_at -> Timestamp,
     }
 }
