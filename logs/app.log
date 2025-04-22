@@ -348,3 +348,353 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
 	Is the server running on that host and accepting TCP/IP connections?
 
+2025-04-21T21:46:39.785144283-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.794886791-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.800647888-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.845760877-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.859850630-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.873499117-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.937745008-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.943781991-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.953695938-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:39.995856479-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.230145679-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.248278291-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.248444329-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.317679925-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.320416386-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.334602792-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.400810043-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.410799415-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.413014566-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:40.463389026-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.068333069-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.109650364-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.109902121-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.185748629-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.185893786-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.187837557-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.254971744-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.275601426-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.277403838-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:41.313232485-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.707841573-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.755102755-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.783892907-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.848874722-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.864937492-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.923269941-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.931149892-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.948809560-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:42.983918655-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:43.003974657-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:45.965016872-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.019303170-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.039482571-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.097749485-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.110913832-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.183354054-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.183723538-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.208617030-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.248057381-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:46.263674048-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.427103464-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.458212255-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.486515545-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.565003709-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.569050148-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.639706895-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.645197949-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.677294828-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.698383268-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:46:52.720434576-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.264923255-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.319767330-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.359015007-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.443666578-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.448415049-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.508049302-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.518813704-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.564821234-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.612902482-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T21:47:05.622865739-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "mors"
+
+2025-04-21T22:01:19.537382095-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.542434001-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.544288507-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.584653200-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.588254129-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.598822456-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.621375666-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.623868144-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.641812369-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.659518748-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.964921644-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.967359344-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:19.971266288-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.026515838-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.028940404-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.035914318-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.054388679-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.060613129-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.079247814-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.100944121-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.791425908-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.795468731-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.795646299-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.862014140-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.863915651-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.865875237-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.893244497-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.901471106-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.921116702-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:20.940172546-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.444843877-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.445102972-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.447329347-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.503959628-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.508787091-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.532323988-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.568386512-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.573961238-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.590994192-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:22.615295602-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.666203196-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.674459495-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.677036044-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.733870448-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.737723277-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.756606940-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.810469618-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.815805238-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.827038719-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:25.846028457-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.087719180-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.096462845-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.104967303-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.177093372-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.182817867-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.195742272-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.266812728-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.267447417-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.269200320-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:32.294665265-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:44.929120501-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:44.936926209-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:44.943143578-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.025713092-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.039377308-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.044015629-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.110008414-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.126624870-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.126860991-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
+2025-04-21T22:01:45.159265997-03:00 - ERROR - connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "sche_db" does not exist
+
