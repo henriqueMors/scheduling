@@ -12,8 +12,8 @@ use crate::{
 pub fn router(pool: Arc<Pool>, config: Arc<Config>) -> Router {
     Router::new()
         .route("/", post(create_appointment))
-        .route("/:client_id", get(list_appointments_by_client))
-        .route("/:id", put(update_appointment).delete(delete_appointment))
-        .layer(Extension(pool))   // Aqui, passamos o Arc<Pool>
-        .layer(Extension(config)) // Passamos o Config normalmente
+        .route("/client/:client_id", get(list_appointments_by_client))  // Modificado
+        .route("/appointment/:id", put(update_appointment).delete(delete_appointment))  // Modificado
+        .layer(Extension(pool))
+        .layer(Extension(config))
 }
